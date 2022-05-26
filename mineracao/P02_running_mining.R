@@ -4,15 +4,16 @@ setwd("mineracao/")
 source("MB01_master_functions.R")
 source("B01_general_auxiliar_functions.R")
 
-system("docker run -d -p 4445:4444 -p 5901:5900 selenium/standalone-firefox-debug")
+system("docker run -d -p 4446:4444 -p 5902:5900 selenium/standalone-firefox-debug")
 
-palavras_chaves <- c('ementa OU lei OU documento OU a')
+palavras_chaves <- c('ementa OR lei OR documento OR a OR o OR e')
 
-
-port<-4445
 browser <- 'firefox'
-download<-FALSE
-fat_temp<-1.5
+fat_temp <- 0.8
+download<-TRUE
+port<-4446
+
+
 
 
 
