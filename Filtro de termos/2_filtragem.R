@@ -137,8 +137,12 @@ names <- c("ACP",
            "recursos naturais/biodiversidade/ecologico")
 
 #LEITURA DE BANCO E RENOME DA COLUNA DE EMENTA----
-banco <- read.csv2("mineracao/TJPA/resultado_TJPA_final_2017_a_2022.csv")
+banco <- read.csv2("STF/consolidado_mineraSTF.csv")
 
+#duplicações
+#STF
+banco$ID <- paste0(banco$ID,banco$id_portal)
+banco[duplicated(banco$ID)==F,]->banco
 
 
 #FILTRO DE TERMOS----
@@ -156,4 +160,5 @@ banco_com_filtros <- busca_palavras_chave(dataframe_final = banco_com_filtros,
                                           regex = regex,
                                           nome_coluna = 'coluna_texto_tratada')
 
-openxlsx::write.xlsx(banco_com_filtros,"mineracao/resultado_TJPA_final_2017_a_2022_com_filtros_V2.csv")
+openxlsx::write.xlsx(banco_com_filtros,"STF/resultado_STF_final_2017_a_2022_com_filtros.xlsx")
+write.csv2(banco_com_filtros,"STF/resultado_STF_final_2017_a_2022_com_filtros.csv")
