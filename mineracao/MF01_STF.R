@@ -423,7 +423,7 @@ meses <- 1:12
 anos <- 2017:2022
 
 final <- NULL
-listfiles <- list.files(pattern = "[[:digit:]]_mineraSTF")
+listfiles <- list.files(path = "STF", pattern = "[[:digit:]]+_mineraSTF",full.names = T)
 for(i in listfiles){
   if(is.null(final)){
     final <- read.csv2(i)[,-1]
@@ -436,7 +436,7 @@ for(i in listfiles){
 for(ano in anos){
   for(mes in 1:12){
    
-    if((ano == 2022 & mes < 5)|(ano == 2022 & mes > 0)){
+    if((ano == 2019 & mes %in% c(11))){
       client$navigate(initLink)
       dataIni <- as.Date(paste("01",mes,ano,sep = "-"),format = "%d-%m-%Y")
       dataFim <- dataIni %m+% months(1)
@@ -524,7 +524,7 @@ for(ano in anos){
       else{
         final <- bind_rows(final, objeto_final)
       }
-      write.csv2(final, paste0("consolidado","_mineraSTF.csv"))
+      write.csv2(final, paste0("STF/consolidado","_mineraSTF.csv"))
 
                                                                                                                             
     }
@@ -532,6 +532,10 @@ for(ano in anos){
     }
 }
                                                                                                   
+
+
+
+
 
 
 
