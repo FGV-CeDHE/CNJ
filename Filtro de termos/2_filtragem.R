@@ -137,12 +137,19 @@ names <- c("ACP",
            "recursos naturais/biodiversidade/ecologico")
 
 #LEITURA DE BANCO E RENOME DA COLUNA DE EMENTA----
-banco <- read.csv2("STF/consolidado_mineraSTF.csv")
+
 
 #duplicações
 #STF
-banco$ID <- paste0(banco$ID,banco$id_portal)
+#banco$ID <- paste0(banco$ID,banco$id_portal)
+banco <- read.csv2("mineracao/STF/consolidado_mineraSTF.csv")
 banco[duplicated(banco$ID)==F,]->banco
+
+#TJPA
+#banco$ID <- paste0(banco$ID,banco$id_portal)
+banco <- read.csv2("mineracao/TJPA/resultado_consolidado_TJPA.csv")
+banco[duplicated(banco$numero_processo)==F,]->banco
+#TODO uniformizar o controle de repetições
 
 
 #FILTRO DE TERMOS----
