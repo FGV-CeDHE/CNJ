@@ -1,26 +1,40 @@
+
+## PACOTES UTILIZADOS
+
 library(stringr)
 library(dplyr)
 
-##FUNÇÃO DE FILTRAGEM----
-busca_palavras_chave <- function(dataframe_final, palavras_chave,regex, nome_coluna, contagem=F, ementa=T, count=F){
+## FUNÇÃO DE FILTRAGEM
+
+busca_palavras_chave <- function(dataframe_final, palavras_chave, regex, 
+                                 nome_coluna, contagem = F, ementa = T, count = F){
+  
   require(stringr)
   
   for(k in 1:length(palavras_chave)){
-    if(count==T){
+    
+    if(count == T){
+      
       dataframe_final[,palavras_chave[k]] <- str_count(dataframe_final[,nome_coluna], 
-                                                       tolower(iconv(regex[k], from="UTF-8",to="ASCII//TRANSLIT")))
-    }else{
+                                                       tolower(iconv(regex[k], 
+                                                                     from = "UTF-8",
+                                                                     to = "ASCII//TRANSLIT")))
+    } else{
+      
       dataframe_final[,palavras_chave[k]] <- ifelse(str_detect(dataframe_final[,nome_coluna], 
-                                                       tolower(iconv(regex[k], from="UTF-8",to="ASCII//TRANSLIT")))>0,1,0)
+                                                               tolower(iconv(regex[k], 
+                                                                             from = "UTF-8",
+                                                                             to = "ASCII//TRANSLIT"))) > 0, 1 , 0)
     }
     
     print(palavras_chave[k])
-
+    
   }
+  
   return(dataframe_final)
 }
 
-##LISTA DE PALAVRAS CHAVES----
+## LISTA DE PALAVRAS-CHAVE
 
 regex <- c(" a..o.{1,3}civil.{1,3}p.blica | acp",
            " suspens.o.{1,6}seguran.a ",
@@ -79,6 +93,8 @@ regex <- c(" a..o.{1,3}civil.{1,3}p.blica | acp",
            " floresta ",
            " biodiversidade|recurso.{1,2}natura(is|l)|ecol.gico ")
 
+## NOMES DAS COLUNAS
+
 names <- c("ACP",
            "suspensão de segurança",
            "suspensão de sentença",
@@ -135,37 +151,3 @@ names <- c("ACP",
            "amazônia",
            "floresta",
            "recursos naturais/biodiversidade/ecologico")
-
-#LEITURA DE BANCO E RENOME DA COLUNA DE EMENTA----
-
-
-#duplicações
-#STF
-#banco$ID <- paste0(banco$ID,banco$id_portal)
-banco <- read.csv2("mineracao/STF/consolidado_mineraSTF.csv")
-banco[duplicated(banco$ID)==F,]->banco
-
-#TJPA
-#banco$ID <- paste0(banco$ID,banco$id_portal)
-banco <- read.csv2("mineracao/TJPA/resultado_consolidado_TJPA.csv")
-banco[duplicated(banco$numero_processo)==F,]->banco
-#TODO uniformizar o controle de repetições
-
-
-#FILTRO DE TERMOS----
-#Criar colunas de acordo com os termos pré estabelecidos para as próprias pesquisadoras manusearem a base
-
-banco_com_filtros <- banco %>% 
-  #deixar pronto para análise, tudo em minúscula e sem espaços extras e sem acentos
-  mutate(coluna_texto_tratada = str_to_lower(ementa),
-         coluna_texto_tratada = str_squish(coluna_texto_tratada),
-         coluna_texto_tratada = iconv(coluna_texto_tratada, from="UTF-8",to="ASCII//TRANSLIT"))
-
-
-banco_com_filtros <- busca_palavras_chave(dataframe_final = banco_com_filtros,
-                                          palavras_chave = names,
-                                          regex = regex,
-                                          nome_coluna = 'coluna_texto_tratada')
-
-openxlsx::write.xlsx(banco_com_filtros,"STF/resultado_STF_final_2017_a_2022_com_filtros.xlsx")
-write.csv2(banco_com_filtros,"STF/resultado_STF_final_2017_a_2022_com_filtros.csv")

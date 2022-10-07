@@ -1,5 +1,4 @@
 #função de mineração do TST
-#setwd("mineracao")
 minera_objeto_unitario <- function(client, download=F,fat_temp=1){
   
   #inicializa objeto
@@ -8,9 +7,9 @@ minera_objeto_unitario <- function(client, download=F,fat_temp=1){
   
   #cabeçalho
   element <- client$findElements(using = "xpath",
-                                 value =  '/html/body/app-root/app-home/main/app-search-detail/div/div/div[2]/mat-tab-group/div/mat-tab-body[1]/div/div/div[1]')
+                                value =  '/html/body/app-root/app-home/main/app-search-detail/div/div/div[2]/mat-tab-group/div/mat-tab-body[1]/div/div/div[1]')
   if(length(element)==0)element <- client$findElements(using = "xpath",
-                                                       value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div[2]/div/div[1]')                              
+                                                        value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div[2]/div/div[1]')                              
   
   element <- element[[1]]
   cab <- element$findChildElements(using = 'xpath',value = "div/h4")
@@ -32,14 +31,14 @@ minera_objeto_unitario <- function(client, download=F,fat_temp=1){
   element <- client$findElements(using = "xpath",
                                  value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div/mat-tab-group/div/mat-tab-body[1]/div/div/div')
   if(length(element)==0) element  <- client$findElements(using = "xpath",
-                                                         value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div[2]/div/div')   
-  
+                                                        value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div[2]/div/div')   
+
   for(i in 1:length(element)){
-    
+
     title <- element[[i]]$findChildElements(using = "xpath",
                                             value = "h4")
     if(length(title)==1) {
-      
+
       
       if(title[[1]]$getElementText()[[1]]=="Publicação"){
         dados_elemento <- element[[i]]$findChildElements(using = "xpath",
@@ -107,10 +106,10 @@ minera_objeto_unitario <- function(client, download=F,fat_temp=1){
   
   main_handle <- client$getWindowHandles()[[1]]
   element <- client$findElements(using = "xpath",
-                                 value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div/mat-tab-group/div/mat-tab-body/div/div/div/div/div/mat-icon[contains(@mattooltip,"Acompanhamento processual")]')
+                                value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div/mat-tab-group/div/mat-tab-body/div/div/div/div/div/mat-icon[contains(@mattooltip,"Acompanhamento processual")]')
   
   if(length(element)==0) element <- client$findElements(using = "xpath",
-                                                        value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div[2]/div/div[1]/div[2]/div/mat-icon[contains(@mattooltip,"Acompanhamento processual")]')
+                                                       value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div[2]/div/div[1]/div[2]/div/mat-icon[contains(@mattooltip,"Acompanhamento processual")]')
   
   element <- element[[1]]                                     
   count_tries <- 0
@@ -186,12 +185,12 @@ minera_objeto_unitario <- function(client, download=F,fat_temp=1){
       client$switchToWindow(windowId = main_handle)
       return(objeto_auxiliar)
       
-    }
+      }
   }
   
   
   element <- client$findElements(using = "xpath",
-                                 value = '/html/body/div/section/div/div/div/div/div/div/div/div/div[contains(@class,"processo-rotulo")]')
+                                value = '/html/body/div/section/div/div/div/div/div/div/div/div/div[contains(@class,"processo-rotulo")]')
   
   count <- 0
   while(length(element)<1 & count < 50){
@@ -199,8 +198,8 @@ minera_objeto_unitario <- function(client, download=F,fat_temp=1){
                                    value = '/html/body/div/section/div/div/div/div/div/div/div/div/div[contains(@class,"processo-rotulo")]')
     count <- count+1 
     Sys.sleep(fat_temp*0.5)
-  }
-  
+    }
+
   element <- element[[1]]
   if(length(element)>0){
     print(element$getElementText()[[1]])
@@ -217,9 +216,9 @@ minera_objeto_unitario <- function(client, download=F,fat_temp=1){
                                objeto_auxiliar$relator,
                                paste0(stringr::str_remove_all(string = objeto_auxiliar[,c("data_publicacao","data_julgamento")],pattern = "/"),collapse = ""))
   
-  
+
   element <- client$findElements(using = "xpath",
-                                 value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div/mat-tab-group/div/mat-tab-body/div/div/div/div/div/mat-icon[contains(@mattooltip,"Inteiro teor")]')
+                                value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div/mat-tab-group/div/mat-tab-body/div/div/div/div/div/mat-icon[contains(@mattooltip,"Inteiro teor")]')
   
   if(length(element) == 0) element <- client$findElements(using = "xpath",
                                                           value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div/div/div/div/div/mat-icon[contains(@mattooltip,"Íntegra da decisão")]')
@@ -286,14 +285,14 @@ waiting <- function(client, fat_temp=1){
   
   element <- client$findElements(using = 'xpath',
                                  value = '/html/body/app-root/app-loader/div')
-  
+
   
   
   count<-0
   while(length(element)>0 & count < 500){
     element <- client$findElements(using = 'xpath',
-                                   value = '/html/body/app-root/app-loader/div')
-    
+                                 value = '/html/body/app-root/app-loader/div')
+
     Sys.sleep(fat_temp*0.5)
     count<-count+1
   }
@@ -351,7 +350,7 @@ navega_ate_paginacao <- function(client, pagina=NULL,fat_temp=1,datainicio,dataf
   waiting(client,fat_temp)
   element <- client$findElement(using = 'xpath',
                                 value = '/html/body/app-root/app-home/main/search/div/div/div/div[1]/div[2]/div[3]/div/div[2]/mat-form-field[2]/div/div[1]/div[3]/input')
-  
+
   #element$sendKeysToElement(list(paste0(dia,mes,year(now()))))
   element$sendKeysToElement(list(datafim))
   element$sendKeysToElement(sendKeys = list(selKeys$enter))
@@ -388,17 +387,15 @@ require(lubridate)
 
 #rodando a mineração
 
+source("scripts/B01_general_auxiliar_functions.R")
 
-
-source("B01_general_auxiliar_functions.R")
-
-system("docker run -d -p 4445:4444 -p 5901:5900 selenium/standalone-firefox-debug")
+system("docker run -d -p 4445:4444 -p 5901:5900 selenium/standalone-chrome-debug")
 
 palavras_chaves <- c('ementa OU lei OU documento OU a')
-Sys.sleep(4)
+
 
 port<-4445
-browser <- 'firefox'
+browser <- 'chrome'
 download<-FALSE
 fat_temp<-1.5
 
@@ -423,7 +420,7 @@ meses <- 1:12
 anos <- 2017:2022
 
 final <- NULL
-listfiles <- list.files(path = "mineracao/STF", pattern = "[[:digit:]]+_mineraSTF",full.names = T)
+listfiles <- list.files(path = "STF", pattern = "[[:digit:]]+_mineraSTF",full.names = T)
 for(i in listfiles){
   if(is.null(final)){
     final <- read.csv2(i)[,-1]
@@ -433,15 +430,14 @@ for(i in listfiles){
 }
 
 
-
 for(ano in anos){
   for(mes in 1:12){
-    
-    if((ano %in% c(2018,2019,2020,2021))|(ano == 2022 & mes < 6)){
+   
+    if((ano == 2019 & mes %in% c(11))){
       client$navigate(initLink)
       dataIni <- as.Date(paste("01",mes,ano,sep = "-"),format = "%d-%m-%Y")
       dataFim <- dataIni %m+% months(1)
-      
+
       dataIni <- paste0(stringr::str_extract(dataIni,"[[:digit:]]{2}$"),
                         stringr::str_extract(dataIni,"(?<=-)[[:digit:]]{2}(?=-)"),
                         stringr::str_extract(dataIni,"^[[:digit:]]{4}(?=-)"))
@@ -449,7 +445,7 @@ for(ano in anos){
       dataFim <- paste0(stringr::str_extract(dataFim,"[[:digit:]]{2}$"),
                         stringr::str_extract(dataFim,"(?<=-)[[:digit:]]{2}(?=-)"),
                         stringr::str_extract(dataFim,"^[[:digit:]]{4}(?=-)"))
-      
+
       navega_ate_paginacao(client = client,fat_temp = 1.5,datainicio = dataIni,datafim = dataFim, palavras_chaves = palavras_chaves)
       
       #preparando paginação
@@ -458,16 +454,88 @@ for(ano in anos){
       
       num_docs <- as.numeric(paste0(stringr::str_extract_all(string = element$getElementText()[[1]],pattern = "[[:digit:]]+")[[1]],collapse = ""))
       
-      arq_aux <- read.csv2(paste0("STF/",dataIni,"_mineraSTF.csv"))
+      objeto_final <- minera_objeto_unitario(client = client,download = F)
+      objeto_final <- objeto_final[0,]
       
-      print(paste0("% minerado para o mes ", mes, " de ", ano,": ", round(100*length(arq_aux[,1])/num_docs,digits = 2), "%"))
-      
-      
-      
+      for(i in 1:num_docs){
+        
+        element <- client$findElements(using = "xpath",
+                                       value =  '/html/body/app-root/app-home/main/app-search-detail/div/div/div[2]/mat-tab-group/div/mat-tab-body[1]/div/div/div[1]')
+        if(length(element)==0)element <- client$findElements(using = "xpath",
+                                                             value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div[2]/div/div[1]')                              
+        
+        
+        while(length(element)==0){
+          client$refresh()         
+          waiting(client,fat_temp)
+          Sys.sleep(fat_temp*1)
+          element <- client$findElements(using = "xpath",
+                                         value =  '/html/body/app-root/app-home/main/app-search-detail/div/div/div[2]/mat-tab-group/div/mat-tab-body[1]/div/div/div[1]')
+          if(length(element)==0)element <- client$findElements(using = "xpath",
+                                                               value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div[2]/div/div[1]')                              
+          
+        }
+        
+        objeto_auxiliar <- minera_objeto_unitario(client = client,download = download,fat_temp = 1.5)
+        
+        if(length(objeto_auxiliar)==1){
+          control<-TRUE
+          while(length(objeto_auxiliar)==1){
+            client$navigate(initLink)
+            navega_ate_paginacao(client = client,pagina = i,fat_temp = 1.5,datainicio = dataIni,datafim = dataFim,palavras_chaves = palavras_chaves)
+            objeto_auxiliar <- minera_objeto_unitario(client = client,download = download,fat_temp = 1.5)
+            
+            if(length(objeto_auxiliar)==1){
+              control <- TRUE
+            }else{
+              control<-FALSE
+            }
+            
+          }
+        }
+        objeto_auxiliar$id_mineracao <- i
+        objeto_final <- bind_rows(objeto_final, objeto_auxiliar)
+        
+        element <- client$findElements(using = 'xpath',
+                                      value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div/paginator/nav/ul/li/a/span/i[contains(@class, "fa fa-angle-right")]')
+        
+        if(length(element)==0){
+          client$navigate(initLink)
+          navega_ate_paginacao(client = client,fat_temp = 1.5,datainicio = dataIni,datafim = dataFim, palavras_chaves = palavras_chaves)
+          element <- client$findElements(using = 'xpath',
+                                         value = '/html/body/app-root/app-home/main/app-search-detail/div/div/div/paginator/nav/ul/li/a/span/i[contains(@class, "fa fa-angle-right")]')
+          
+        }
+        element <- element[[1]]
+        element$clickElement()
+        waiting(client,fat_temp)
+        print(paste0("Documento ", i, " de ", num_docs, ": " ,round(x = i/num_docs*100, digits =2),"%"))
+        write.csv2(objeto_final, paste0(dataIni,"_mineraSTF.csv"))
+        
+
+        gc()
+      }
+      if(is.null(final)==T){
+        final = objeto_final
+      }
+      else{
+        final <- bind_rows(final, objeto_final)
+      }
+      write.csv2(final, paste0("STF/consolidado","_mineraSTF.csv"))
+
+                                                                                                                            
     }
     
-  }
+    }
 }
+                                                                                                  
 
 
 
+
+
+
+
+
+
+  
