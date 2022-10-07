@@ -1,7 +1,10 @@
-## Centro de Direitos Humanos e Empresas da FGV - CeDHE {style="text-align:center"}
 
-## e {style="text-align:center"}
+<p align="center" width="100%">
 
-## Conselho Nacional de Justiça - CNJ {style="text-align:center"}
+## Centro de Direitos Humanos e Empresas da FGV - CeDHE
+## e
+## Conselho Nacional de Justiça - CNJ
 
-## Judicialização de conflitos socioambientais na Amazônia: impactos de projetos de desenvolvimento {style="text-align:center"}
+## Judicialização de conflitos socioambientais na Amazônia: impactos de projetos de desenvolvimento
+
+</p>
