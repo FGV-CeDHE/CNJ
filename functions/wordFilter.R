@@ -13,22 +13,24 @@ busca_palavras_chave <- function(dataframe_final, palavras_chave, regex,
   
   for(k in 1:length(palavras_chave)){
     
+    cat("Lendo", palavras_chave[k], "\n")
+    
+    for(j in 1:nrow(dataframe_final)){
+    
     if(count == T){
       
-      dataframe_final[,palavras_chave[k]] <- str_count(dataframe_final[,nome_coluna], 
-                                                       tolower(iconv(regex[k], 
-                                                                     from = "UTF-8",
-                                                                     to = "ASCII//TRANSLIT")))
+      dataframe_final[,palavras_chave[k]] <- str_count(dataframe_final[j,nome_coluna], 
+                                                       regex[k])
     } else{
       
-      dataframe_final[,palavras_chave[k]] <- ifelse(str_detect(dataframe_final[,nome_coluna], 
-                                                               tolower(iconv(regex[k], 
-                                                                             from = "UTF-8",
-                                                                             to = "ASCII//TRANSLIT"))) > 0, 1 , 0)
+      dataframe_final[j,palavras_chave[k]] <- ifelse(str_detect(dataframe_final[j,nome_coluna], 
+                                                               regex[k]), 
+                                                    1 , 
+                                                    0)
     }
     
-    print(palavras_chave[k])
-    
+    }
+  
   }
   
   return(dataframe_final)
@@ -36,62 +38,64 @@ busca_palavras_chave <- function(dataframe_final, palavras_chave, regex,
 
 ## LISTA DE PALAVRAS-CHAVE
 
-regex <- c(" a..o.{1,3}civil.{1,3}p.blica | acp",
-           " suspens.o.{1,6}seguran.a ",
-           " suspens.o.{1,6} senten.a ",
-           " suspens.o.{1,6}tutela.{1,3}antecipada ",
-           " suspens.o.{1,6}jurisdi..o ",
-           " suspens.o.{1,3}liminar | SL ",
-           " suspens.o.{1,6}liminar.{1,7}senten.a | SLS ",
-           " suspens.o.{1,6}liminar.{1,6}antecipa..o.{1,6}tutela| SLAT ",
-           " incidente.{1,6}suspens.o ",
-           " minera..o |extra..o.{1,5}min.rio ",
-           " garimp(o|eiro.) ",
-           " min.rio | minera(l|dor.) ",
-           " agricult.",
-           " (produtor|trabalhador).{1,3}rural|produtor.{1,3}agropecu.rio ",
-           " cultivo ",
-           " planta..o ",
-           " pecu.r.|agropecu.",
-           " gado ",
-           " pasto ",
-           " madeir(a|eir.)",
-           " rodov.",
-           " ferrov.",
-           " hidrov.",
-           " hidrel.trica ",
-           " energia ",
-           " uhe ",
-           " usina ",
-           " empreendimento ",
-           " risco ",
-           " dano ",
-           " contamina.",
-           " amea.a ",
-           " Impacto.",
-           " degrada.",
-           " explora.{1,3}Ilega.",
-           " desmata.",
-           " queimada ",
-           " conflito.{1,5}(fundi.rio|agr.rio) ",
-           " disputa.{1,6}terra ",
-           " invas.o ",
-           " grilagem ",
-           " demarca.",
-           " desafeta.",
-           " (altera.|revis.){1,6}limites ",
-           " vulnerab.",
-           " ind.gena.",
-           " tradicion(ais|alidade) ",
-           " quilombo.",
-           " deslocamento.{1,4}(compuls.rio|involunt.rio|for..ado) ",
-           " direitos.{1,3}humano ",
-           " ambient.|socioambient.",
-           " meio.{1,3}ambiente ",
-           " unidade.{1,6}conserva..o ",
-           " amaz.nia ",
-           " floresta ",
-           " biodiversidade|recurso.{1,2}natura(is|l)|ecol.gico ")
+regex <- tolower(iconv(c(" a..o.{1,3}civil.{1,3}p.blica | acp",
+                         " suspens.o.{1,6}seguran.a ",
+                         " suspens.o.{1,6} senten.a ",
+                         " suspens.o.{1,6}tutela.{1,3}antecipada ",
+                         " suspens.o.{1,6}jurisdi..o ",
+                         " suspens.o.{1,3}liminar | SL ",
+                         " suspens.o.{1,6}liminar.{1,7}senten.a | SLS ",
+                         " suspens.o.{1,6}liminar.{1,6}antecipa..o.{1,6}tutela| SLAT ",
+                         " incidente.{1,6}suspens.o ",
+                         " minera..o |extra..o.{1,5}min.rio ",
+                         " garimp(o|eiro.) ",
+                         " min.rio | minera(l|dor.) ",
+                         " agricult.",
+                         " (produtor|trabalhador).{1,3}rural|produtor.{1,3}agropecu.rio ",
+                         " cultivo ",
+                         " planta..o ",
+                         " pecu.r.|agropecu.",
+                         " gado ",
+                         " pasto ",
+                         " madeir(a|eir.)",
+                         " rodov.",
+                         " ferrov.",
+                         " hidrov.",
+                         " hidrel.trica ",
+                         " energia ",
+                         " uhe ",
+                         " usina ",
+                         " empreendimento ",
+                         " risco ",
+                         " dano ",
+                         " contamina.",
+                         " amea.a ",
+                         " Impacto.",
+                         " degrada.",
+                         " explora.{1,3}Ilega.",
+                         " desmata.",
+                         " queimada ",
+                         " conflito.{1,5}(fundi.rio|agr.rio) ",
+                         " disputa.{1,6}terra ",
+                         " invas.o ",
+                         " grilagem ",
+                         " demarca.",
+                         " desafeta.",
+                         " (altera.|revis.){1,6}limites ",
+                         " vulnerab.",
+                         " ind.gena.",
+                         " tradicion(ais|alidade) ",
+                         " quilombo.",
+                         " deslocamento.{1,4}(compuls.rio|involunt.rio|for..ado) ",
+                         " direitos.{1,3}humano ",
+                         " ambient.|socioambient. ",
+                         "meio.{1,3}ambiente",
+                         " unidade.{1,6}conserva..o ",
+                         "amaz.nia",
+                         "floresta",
+                         " biodiversidade|recurso.{1,2}natura(is|l)|ecol.gico "), 
+  from = "UTF-8",
+  to = "ASCII//TRANSLIT"))
 
 ## NOMES DAS COLUNAS
 
