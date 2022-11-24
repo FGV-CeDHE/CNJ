@@ -12,6 +12,10 @@ library(geobr)
 library(tm)
 library(abjutils)
 
+## PREPARANDO O AMBIENTE
+
+setwd("CNJ")
+
 # 1. Data -----------------------------------------------------------------
 
 ## Criando uma lista com os arquivos disponíveis
@@ -33,8 +37,7 @@ for(i in seq_along(files)){
   
   temp <- jsonlite::fromJSON(paste0("data/input/DataJud/",
                                     files[i]),
-                                flatten = TRUE,
-                             encoding = 'UTF-8')
+                                flatten = TRUE)
   
   ## Variável onde o código do Assunto será armazenado
   

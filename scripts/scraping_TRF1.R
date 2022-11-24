@@ -35,10 +35,10 @@ library(httr)
 
 ## FUNÇÕES
 
-source("scripts/windowSwitch.R", 
+source("functions/windowSwitch.R", 
        encoding = "UTF-8")
 
-source("scripts/filter.R", 
+source("functions/wordFilter.R", 
        encoding = "UTF-8")
 
 # 1. Ambiente -------------------------------------------------------------
@@ -249,123 +249,6 @@ for(i in 1:3964){ ## 3.964 páginas de informação.
 saveRDS(df_final,
         "data/output/TRF1/acórdãos_TRF1_23072022_temp.rds")
 
-## 2.2. Decisões Monocráticas ----------------------------------------------
-
-## Criando uma data frame onde os dados serão armazenados
-
-#df_final <- data.frame()
-
-## Salvando o id da página principal
-
-main_handle <- remDr$getWindowHandles()[[1]]
-
-## For loop que faz o download dos detalhes
-## referentes ao Acórdão
-
-for(i in 946:3964){ ## 3.964 páginas de informação.
-  ## 198.195 registros.
-  
-  cat("Lendo página", i, "\n")
-  
-  ## Criando um data frame para armazenar os dados
-  ## encontrados em cada página
-  
-  df_pagina <- data.frame()
-  
-  ## Coletando o número da página
-  
-  Pagina <- i
-  
-  ## Intervalo entre um processamento e outro
-  
-  Sys.sleep(15)
-  
-  ## Cria uma variável vazia onde as informações serão armazenadas
-  
-  webElem1 <- NA
-  
-  ## Variável que contabiliza as tentativas de 
-  ## coletar a informação
-  
-  tentativas <- 0
-  
-  ## Coletando as informações de toda a página
-  
-  while(is.na(webElem1) && tentativas < 10){
-    
-    webElem1 <- tryCatch({
-      suppressMessages({
-        
-        ## Atualizando a contagem de tentativas
-        
-        tentativas <- tentativas + 1
-        
-        ## Informa o xpath 
-        
-        webElem1 <- remDr$findElements("xpath",
-                                       "//*[contains(@id,'item_resultado-')]")
-        
-        ## Mensagem e atribuição no caso de erro
-        
-        webElem1 })}, error = function(e) {print("erro")
-          NA})
-  }
-  
-  for(j in 1:50){ ## 50 resultados por página.
-    
-    cat("Resultado", j, "\n")
-    
-    webElem00 <- tryCatch({
-      suppressMessages({
-        
-        ## Coletando o texto
-        
-        webElemtxt1 <- as.character(unlist(webElem1[[j]]$getElementText()))
-        
-        ## Extraindo as informações coletadas
-        
-        df_linha <- data.frame(do.call('rbind', strsplit(webElemtxt1,
-                                                         '\n',
-                                                         fixed = TRUE)))
-        
-        ## Cria uma variável com a Página do processo
-        
-        df_linha$Pagina <- Pagina
-        
-        ## Empilha todos os Inquéritos Civis encontrados na página 
-        ## em um úncio dataframe
-        
-        df_pagina <- bind_rows(df_pagina, df_linha)
-        
-        webElem00 })}, error = function(e) {print("erro")
-          NA})
-    
-  }
-  
-  ## Empilha todos os processos em um banco final
-  
-  df_final <- bind_rows(df_final, df_pagina)
-  
-  ## Rolando a página para baixo
-  
-  webElem00 <- remDr$findElement("css", "body")$sendKeysToElement(list(key = "end"))
-  
-  ## Salvando o xpath da função "próxima página"
-  
-  webElem00 <- remDr$findElement(using = "css selector", 
-                                 "#formulario\\:tabelaDocumentos_paginator_bottom > a.ui-paginator-next.ui-state-default.ui-corner-all")$clickElement()
-  
-  ## Rolando a página para cima
-  
-  webElem00 <- remDr$findElement("css", "body")$sendKeysToElement(list(key = "home"))
-  
-}
-
-## Salvando o banco
-
-saveRDS(df_final,
-        "data/output/TRF1/acórdãos_TRF1_07072022_temp.rds")
-
 # 3. Limpeza --------------------------------------------------------------
 
 ## 3.1. Acórdãos -----------------------------------------------------------
@@ -507,9 +390,6 @@ for (i in colnames(df_final)){
                         df_final[[i]], 
                         perl = TRUE)
 }
-
-## 3.2. Decisões Monocráticas ----------------------------------------------
-
 
 # 4. Inteiro Teor ---------------------------------------------------------
 

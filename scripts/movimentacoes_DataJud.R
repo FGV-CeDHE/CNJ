@@ -1,7 +1,7 @@
 
-## PROCESSANDO ARQUIVOS DATAJUD
-## DATA: 30/05/2022
+## TÍTULO: MOVIMENTAÇÕES DATAJUD - NOVA BASE DE 05/09/2022
 ## AUTORA: REBECA CARVALHO
+## DATA: 14/09/2022
 
 ## PACOTES UTILIZADOS
 
@@ -10,146 +10,124 @@ library(tidyverse)
 library(jsonlite)
 library(geobr)
 library(data.table)
+library(tm)
+library(reshape2)
+
+## PREPARANDO O AMBIENTE
+
+setwd("CNJ")
 
 # 1. Data -----------------------------------------------------------------
 
-## Carregando os dados do DataJud
-
-datajud <- readRDS("data/output/DataJud/dataJud_final_17072022.rds")
-
-## Carregando a lista de municípios que integra a Amazônia Legal
-
-municipios <- readxl::read_xls("data/input/SireneJud/lista_de_municipios_Amazonia_Legal_2020.xls")
-
-
-## Criando uma lista com os arquivos disponíveis
-
-files <- list.files(path = "data/input/DataJud",
-                    pattern = "json")
-
-## Cria uma lista onde os dados
-## serão armazenados
-
-movimentos <- list()
-
-## For loop que extrai os dados
-## de movimentação
-
-for(i in seq_along(files)){
-  
-  cat("Lendo", i, "\n")
-  
-  ## Carregando o arquivo
-  
-  temp <- jsonlite::fromJSON(paste0("data/input/DataJud/",
-                                    files[i]),
-                             flatten = TRUE)
-  
-  temp2 <- list()
-  
-  for(j in 1:nrow(temp)){
-    
-    cat("Linha", j, "\n")
-    
-    Numero <- temp$`_source.dadosBasicos.numero`[j]
-  
-  unlist <- tryCatch({
-    suppressMessages({
-      
-    mov   <- as.data.frame(temp$`_source.movimento`[[j]])
-    
-    mov$Numero <- Numero
-    
-    temp2[[j]] <- mov
-
-      
-      unlist })}, error = function(e) {print("erro")
-        NA})
-  }
-  
-  temp2 <- rbind.fill(temp2)
-  
- saveRDS(temp2,
-         paste0("data/output/DataJud/movimentos_parte_",
-                i,
-                ".rds"))
-  gc()
-}
-
-## Filtrando somente os dados referentes a Amazônia Legal
-
-datajud <- datajud %>% 
-  filter(UF %in% municipios$SIGLA) %>% 
-  mutate(Numero = str_replace_all(Numero, 
-                                  "[[:punct:]]", 
-                                  ""))
-
-## Criando uma lista com os arquivos disponíveis
-
-files <- list.files(path = "data/output/DataJud",
-                    pattern = "movimentos_parte")
-
-## Cria uma lista onde os dados serão armazenados
-
-movimentos_final <- list()
-
-## For loop que carrega os arquivos
-
-for(i in seq_along(files)){
-  
-  cat("Lendo", i, "\n")
-  
-  ## Carregando o arquivo
-  
-  temp <- readRDS(paste0("data/output/DataJud/",
-                                   files[i]))
-  
-  temp <- temp %>%
-    filter(Numero %in% unique(datajud$Numero)) %>% 
-    mutate(across(everything(), as.character)) %>% 
-    unique()
-  
-  movimentos_final <- rbind.fill(movimentos_final, 
-                                 temp)
-  
-  gc()
-  
-}
-
-saveRDS(movimentos_final,
-        "data/output/DataJud/movimentações_amazônia legal.rds")
-
-exportJson <- toJSON(datajud$movimento)
-
-write(exportJson, file = "movimentos2.JSON")
-
-temp <- jsonlite::fromJSON("movimentos.JSON",
-                           flatten = TRUE)
-
-
-# 2. Limpeza --------------------------------------------------------------
-
 ## Carregando os dados de referência
 
-movimentacoes <- readRDS("data/output/DataJud/movimentações_amazônia legal.rds")
+datajud <- readRDS("data/output/SireneJud/sirenejud_allvars_filt_v18102022.rds")
 
 codigo <- readxl::read_xlsx("data/output/DataJud/cod_movimentos.xlsx")
 
 ## Alterando o nome da variável
 
 codigo <- codigo %>% 
-  dplyr::rename("movimentoNacional.codigoNacional" = "Código") %>% 
-  dplyr::select(-Glossário)
+  dplyr::rename("nome_movimento" = "Descrição") %>% 
+  mutate(nome_movimento = str_to_upper(nome_movimento)) %>% 
+  dplyr::select(-Glossário) %>% 
+  unique()
 
-## Alterando o tipo da variável
+## Selecionando somente os casos que interessam no DataJud
 
-movimentacoes <- movimentacoes %>% 
-  mutate(movimentoNacional.codigoNacional = as.character(movimentoNacional.codigoNacional))
+movimentos <- datajud %>% 
+  filter(dt_inicio_situacao_novo_v2 >= "2020") %>% 
+  select(numprocess,
+         data_ajuizamento,
+         dt_inicio_situacao_novo,
+         dt_inicio_situacao_novo_v2,
+         uf,
+         municipio,
+         grau,
+         tribunal,
+         movimento) %>% 
+  unique()
 
-## Juntando os dados
+## Reorganizando os dados
 
-movimentacoes <- left_join(movimentacoes,
-                           codigo) %>% 
-  mutate(Movimento = paste0(`movimentoNacional.codigoNacional`,
+movimentos <- movimentos %>% 
+  mutate(movimento = str_replace_all(movimento,
+                                     "\\[|]",
+                                     ""),
+         movimento = str_replace_all(movimento,
+                                     '"',
+                                     ""),
+         movimento = str_replace_all(movimento,
+                                     "\\}",
+                                     "")) %>% 
+  separate_rows(movimento,
+                sep = "{") %>% 
+  separate(movimento,
+           sep = "\\,",
+           into = c("dt_inicio_situacao",
+                    "dt_fim_situacao",
+                    "sigla_grau",
+                    "id_situacao",
+                    "id_situacao_iniciar",
+                    "id_situacao_finalizar",
+                    "id_fase_processual",
+                    "id_tipo_procedimento",
+                    "id_natureza_procedimento",
+                    "nome_situacao",
+                    "nome_fase_processual",
+                    "nome_tipo_procedimento",
+                    "nome_natureza_procedimento",
+                    "id_movimento_origem",
+                    "nome_movimento",
+                    "movimentacao_complemento",
+                    "movimento_nome_completo",
+                    "movimento_nivel",
+                    "nome_julgador",
+                    "criminal")) %>% 
+  mutate(across(everything(), 
+                gsub, 
+                pattern = ".*: ", 
+                replacement = ""),
+         across(everything(), 
+                gsub, 
+                pattern = ".*:", 
+                replacement = ""),
+         across(everything(), 
+                str_to_upper)) %>% 
+  filter(dt_inicio_situacao != "") %>% 
+  mutate(nome_movimento = stripWhitespace(trimws(nome_movimento)), 
+         nome_movimento = case_when(nome_movimento == "A DEPENDER DO JULGAMENTO DE OUTRA CAUSA" ~ 
+                                      "A DEPENDER DO JULGAMENTO DE OUTRA CAUSA, DE OUTRO JUÍZO OU DECLARAÇÃO INCIDENTE",
+                                    nome_movimento == "ANISTIA" ~ "ANISTIA, GRAÇA OU INDULTO",
+                                    nome_movimento == "CONHECIMENTO EM PARTE E NÃO-PROVIMENTO" ~ "CONHECIMENTO EM PARTE E NÃO-PROVIMENTO OU DENEGAÇÃO",
+                                    nome_movimento == "CONHECIMENTO EM PARTE E PROVIMENTO" ~ "CONHECIMENTO EM PARTE E PROVIMENTO OU CONCESSÃO",
+                                    nome_movimento == "CONHECIMENTO EM PARTE E PROVIMENTO EM PARTE" ~ 
+                                      "CONHECIMENTO EM PARTE E PROVIMENTO EM PARTE OU CONCESSÃO EM PARTE",
+                                    nome_movimento == "CUMPRIMENTO DE LEVANTAMENTO DA SUSPENSÃO OU DESSOBRESTAMENTO" ~ 
+                                      "CUMPRIMENTO DE LEVANTAMENTO DA SUSPENSÃO",
+                                    nome_movimento == "PRESCRIÇÃO INTERCORRENTE (ART. 921" ~ "PRESCRIÇÃO INTERCORRENTE (ART. 921, § 4º, CPC)",
+                                    nome_movimento == "POR DECISÃO DO PRESIDENTE DO STF - IRDR" ~ "POR DECISÃO DO PRESIDENTE DO STF - SIRDR",
+                                    nome_movimento == "SUMARÍSSIMO (ART. 852-B" ~ "SUMARÍSSIMO (ART. 852-B, § 1º/CLT)",
+                                    T ~ as.character(nome_movimento)))
+
+## Salvando os dados brutos
+
+saveRDS(movimentos,
+        "data/output/SireneJud/movimentações_v18102022.rds")
+
+# 2. Join -----------------------------------------------------------------
+
+## Juntando com os códigos dos movimentos
+
+movimentos <- left_join(movimentos,
+                        codigo) %>%
+  unique() %>%
+  mutate(movimento = paste0(`Código`,
                             " - ",
-                            Descrição))
+                            nome_movimento),
+         criminal = ifelse(criminal == "TRUE",
+                           1,
+                           0)) %>%
+  select(numprocess:nome_natureza_procedimento,
+         movimento,
+         nome_julgador:criminal)

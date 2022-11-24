@@ -33,18 +33,37 @@ library(httr)
 
 #'           1. Processos julgados entre 01/01/2017 até 15/06/2022.
 
+## AMBIENTE DE TRABALHO
+
+setwd("CNJ")
+
 ## FUNÇÕES
 
-source("scripts/windowSwitch.R", 
+source("functions/windowSwitch.R", 
        encoding = "UTF-8")
 
 # 1. Ambiente -------------------------------------------------------------
 
 ## Carregando os processos de referência
 
-processos <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1.xlsx")
+processos_2018_2019 <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2018-2019.xlsx")
 
-## Deixando somete os números do processo
+processos_2020 <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2020.xlsx")
+
+processos_2021 <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2021.xlsx")
+
+## Empilhando os dados
+
+processos <- rbind.fill(processos_2018_2019,
+                        processos_2020,
+                        processos_2021)
+
+## Filtrando somente os anos necessários
+
+processos <- processos %>% 
+  filter(lubridate::year(DataJulgamento) %in% c(2020, 2021))
+
+## Deixando somente os números dos processos
 
 processos <- unique(processos$Numero)
 
@@ -71,8 +90,8 @@ remDr$navigate(url_base)
 
 ## Criando uma data frame onde os dados serão armazenados
 
-#df_final <- data.frame(Numero = NA,
-                      # NumeroOriginal = NA)
+# df_final <- data.frame(Numero = NA,
+#                        NumeroOriginal = NA)
 
 ## Salvando o id da página principal
 
@@ -81,7 +100,7 @@ main_handle <- remDr$getWindowHandles()[[1]]
 ## For loop que faz o download dos detalhes
 ## referentes ao Acórdão
 
-for(i in seq_along(processos)){ ## 3.964 páginas de informação.
+for(i in seq_along(processos)){ 
                                
   cat("Lendo processo", i, "\n")
   
@@ -285,27 +304,43 @@ for(i in seq_along(processos)){ ## 3.964 páginas de informação.
 ## Salvando o banco
 
 saveRDS(df_final,
-        "data/output/TRF1/acórdãos_aux_TRF1_10092022_temp.rds")
+        "data/output/TRF1/acórdãos_aux_TRF1_11102022_temp.rds")
 
 # 3. Limpeza --------------------------------------------------------------
 
 ## Carregando os dados brutos
 
 df_final <- readRDS("data/output/TRF1/acórdãos_aux_TRF1_10092022_temp.rds")
+df_final2 <- readRDS("data/output/TRF1/acórdãos_aux_TRF1_11102022_temp.rds")
+
+## Empilhando os dados
+
+df_final <- rbind.fill(df_final,
+                       df_final2)
 
 ## Características das varas
 
 varas <- readxl::read_xlsx("data/input/TRF1/varas_TRF1.xlsx")
 
-## Processos de referência
+## Carregando os processos de referência
 
-processos <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1.xlsx")
+processos_2018_2019 <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2018-2019.xlsx")
+
+processos_2020 <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2020.xlsx")
+
+processos_2021 <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2021.xlsx")
+
+## Empilhando os dados
+
+processos <- rbind.fill(processos_2018_2019,
+                        processos_2020,
+                        processos_2021)
 
 ## Municípios da Amazônia Legal
 
 ## Carregando os dados
 
-municipios <- readxl::read_xls("data/input/SireneJud/lista_de_municipios_Amazonia_Legal_2020.xls")
+municipios <- readxl::read_xls("data/input/SireneJud/municípios_amazônia legal_2020.xls")
 
 municipios <- municipios %>% 
   mutate(NM_MUN = str_to_upper(rm_accent(NM_MUN)),
@@ -397,7 +432,15 @@ df_final <- df_final %>%
                                                                          "00.00.95201-1952011/STM",
                                                                          ifelse(Numero == "0025991-17.2017.4.01.0000",
                                                                                 "00.02.75201-62752016/JFRR",
-                                                                                NumeroOrigem))))))))) %>% 
+                                                                                ifelse(Numero == "0038170-80.2017.4.01.0000",
+                                                                                       "00.01.43200-91432009/JFAM",
+                                                                                       ifelse(Numero == "0032777-67.2013.4.01.9199",
+                                                                                              "00.01.21200-71212007/AM",
+                                                                                              ifelse(Numero == "0024544-57.2018.4.01.0000",
+                                                                                                     "00.00.00000-00/JFDF",
+                                                                                                     ifelse(Numero == "0055652-46.2014.4.01.0000",
+                                                                                                            "00.02.20200-62202006/MT",
+                                                                                                            NumeroOrigem))))))))))))) %>% 
   separate(NumeroOrigem,
            sep = "/",
            into = c("NumeroOrigem",
@@ -451,5 +494,5 @@ processos <- processos %>%
 # 4. Salva ----------------------------------------------------------------
 
 write.csv(processos,
-          "data/output/TRF1/processos_amazônia legal_2018-2019_TRF1.csv",
+          "data/output/TRF1/processos_amazônia legal_2018-2021_TRF1.csv",
           fileEncoding = "UTF-8")

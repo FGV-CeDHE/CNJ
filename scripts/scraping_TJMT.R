@@ -35,10 +35,10 @@ library(httr)
 
 ## FUNÇÕES
 
-source("scripts/windowSwitch.R", 
+source("functions/windowSwitch.R", 
        encoding = "UTF-8")
 
-source("scripts/filter.R", 
+source("functions/wordFilter.R", 
        encoding = "UTF-8")
 
 # 1. Ambiente -------------------------------------------------------------

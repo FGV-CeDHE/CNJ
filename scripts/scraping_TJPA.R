@@ -1,3 +1,7 @@
+
+source("functions/wordFilter.R", 
+       encoding = "UTF-8")
+
 #função de mineração do TST
 minera_objeto_unitario <- function(elementMain=NULL, download=download,fat_temp=fat_temp){
   #inicializa objeto
@@ -344,24 +348,119 @@ for(i in 1:length(aux$ID)){
 }
 write.csv2(aux,"int_teor_resultado_TJPA_final_2017_a_2022.csv")
 
-expr <- c("terra publicas",
-           "terra publica",
-           "areas publicas",
-           "area publica")
 
-regex <- regex(paste0(expr,collapse = "|"))
+# 3. Limpeza --------------------------------------------------------------
+
+## Carregando os dados do STF
+
+df_final <- readRDS("data/input/TJPA/tjpa_com filtros.rds")
+
+## Organizando os dados
+
+df_final <- df_final %>% 
+  rename("NumeroDocumento" = "numero_documento",
+         "NumeroAcordao" = "numero_acordao",
+         "Numero" = "numero_processo",
+         "DataJulgamento" = "data_julgamento",
+         "DataPublicacao" = "data_publicacao",
+         "OrgaoJudiciante" = "orgao_judiciante",
+         "Relator" = "relator",
+         "TipoDocumento" = "tipo_documento",
+         "TipoAcao" = "tipo_ação",
+         "TipoRecurso" = "tipo_recurso",
+         "URL_InteiroTeor" = "link_html_internet",
+         "Ementa" = "ementa",
+         "Secao" = "secao") %>% 
+  select(NumeroDocumento,
+         NumeroAcordao,
+         Numero,
+         DataJulgamento,
+         DataPublicacao,
+         Secao,
+         OrgaoJudiciante,
+         Relator,
+         TipoAcao,
+         TipoRecurso,
+         Ementa,
+         URL_InteiroTeor) %>% 
+  mutate(OrgaoJudiciante = str_to_upper(OrgaoJudiciante),
+         Relator = str_to_upper(Relator),
+         TipoAcao = str_to_upper(TipoAcao),
+         Ementa = gsub("\\Ementa: ", "", Ementa),
+         Ementa = gsub("\\EMENTA: ", "", Ementa),
+         Ementa = stripWhitespace(gsub("\\EMENTA ", "", Ementa)),
+         DataPublicacao = as.Date(DataPublicacao,
+                                  format = "%d/%m/%Y"),
+         DataJulgamento = as.Date(DataJulgamento,
+                                  format = "%d/%m/%Y"),
+         Secao = ifelse(Secao == "CÃ VEL",
+                        "CÍVEL",
+                        Secao)) %>% 
+  arrange(DataJulgamento)
+
+## Remove os espaços em branco em excesso
+
+for (i in colnames(df_final)){
+  
+  df_final[[i]] <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", 
+                             df_final[[i]], 
+                             perl = TRUE)
+}
+
+# 4. Filtragem ------------------------------------------------------------
+
+## Filtrando o período de análise, removendo linhas duplicadas e
+## criando coluna temporária para a busca de palavras
+
+df_final_filtros <- df_final %>% 
+  filter_all(any_vars(!is.na(.))) %>% 
+  filter(DataJulgamento >= "2018-01-01" &
+         DataJulgamento <= "2022-04-30") %>% 
+  unique() %>% 
+  mutate(EmentaTemp = str_to_lower(Ementa),
+         EmentaTemp = str_squish(EmentaTemp),
+         EmentaTemp = iconv(EmentaTemp,
+                            from = "UTF-8",
+                            to = "ASCII//TRANSLIT"))
+
+## Localizando as palavras-chave
+
+df_final_filtros <- busca_palavras_chave(dataframe_final = df_final_filtros,
+                                         palavras_chave = names,
+                                         regex = regex,
+                                         nome_coluna = 'EmentaTemp')
+
+## Removendo a coluna de texto temporária e
+## ordenando os dados
+
+df_final_filtros <- df_final_filtros %>% 
+  select(-EmentaTemp) %>% 
+  arrange(DataJulgamento)
+
+# 5. Salva ----------------------------------------------------------------
+
+## Salva o banco original, sem filtros
+
+saveRDS(df_final,
+        "data/output/TJPA/acórdãos_TJPA_11112022.rds")
+
+write.csv(df_final,
+          "data/output/TJPA/acórdãos_TJPA_11112022.csv",
+          row.names = FALSE,
+          fileEncoding = "UTF-8")
+
+## Salva o banco com os filtros de período e tema
+
+write.csv(df_final_filtros,
+          "data/output/TJPA/acórdãos_TJPA_11112022_com filtros.csv",
+          row.names = FALSE,
+          fileEncoding = "UTF-8")
+
+saveRDS(df_final_filtros,
+        "data/output/TJPA/acórdãos_TJPA_11112022_com filtros.rds")
 
 
-tjpa$TerrasPublicas <- str_extract_all(tjpa$coluna_texto_tratada,
-                                       pattern = regex)
-
-verify <- tjpa %>% 
-  filter(TerrasPublicas != "character(0)") %>% 
-  select(numero_processo,
-         coluna_texto_tratada,
-         TerrasPublicas)
-
-# 5. Download dos documentos ----------------------------------------------
+# 6. Download dos documentos ----------------------------------------------
 
 urls <- unique(tjpa$link_html_internet)
 
