@@ -21,7 +21,7 @@ setwd("CNJ")
 
 ## Carregando a base de movimentações
 
-movimentos <- readRDS("data/output/SireneJud/movimentações_v18102022.rds")
+movimentos <- readRDS("data/output/DataJud/movimentações_v26102022.rds")
 
 cod_movimentos <- readRDS("data/output/DataJud/familias_cod_movimentos.rds")
 
@@ -43,7 +43,6 @@ cod_movimentos <- cod_movimentos %>%
 movimentos <- left_join(movimentos,
                         cod_movimentos) %>% 
   unique()
-
 
 # 2. Momentos -------------------------------------------------------------
 
@@ -132,14 +131,13 @@ fase02 <- movimentos %>%
 
 ## Removendo caso duplicado
 
-fase02 <- fase02[c(-364),]
+fase02 <- fase02[c(-337),]
 
 ## Verificando se os resultados estão consistentes
 
 robusto <- fase02 %>% 
   group_by(numprocess, 
-           sigla_grau
-  ) %>% 
+           sigla_grau) %>% 
   summarise(freq = n()) 
 
 ## Empilhando as duas fases
@@ -152,9 +150,9 @@ momentos <- rbind(fase01,
 ## Agregando os resultados
 
 momentos_agg <- aggregate(nome_fase_processual ~ numprocess + sigla_grau,
-                       data = momentos,
-                       paste,
-                       collapse = " - ") %>% 
+                          data = momentos,
+                          paste,
+                          collapse = " - ") %>% 
   rename("movimento2" = "nome_fase_processual")
 
 ## Juntando com as fases
@@ -188,7 +186,7 @@ momentos2 <- momentos %>%
 
 ## Calculando o tempo médio para cada um dos tribunais
 
-media_fases <- momentos2 %>%
+media_momentos <- momentos2 %>%
   mutate(movimento = "Início do processo - Execução") %>% 
   group_by(sigla_grau,
            tribunal,
@@ -203,7 +201,7 @@ media_fases <- momentos2 %>%
 fase01 <- movimentos %>%  
   unique() %>% 
   filter(!nome_situacao %in% c("PENDENTE",
-                              "TRAMITANDO")) %>% 
+                               "TRAMITANDO")) %>% 
   filter(nome_fase_processual == "INVESTIGATÓRIA") %>% 
   mutate(dt_inicio_situacao = as.Date(dt_inicio_situacao,
                                       format = "%Y-%m-%d"),
@@ -423,16 +421,16 @@ media_fases <- fases2 %>%
 ## Salvando o resultado
 
 writexl::write_xlsx(media_fases,
-                    "data/output/SireneJud/média_fases processuais.xlsx")
+                    "data/output/DataJud/média_fases processuais.xlsx")
 
-writexl::write_xlsx(media_fases,
-                    "data/output/SireneJud/média_fases processuais_conhecimento.xlsx")
+writexl::write_xlsx(media_momentos,
+                    "data/output/DataJud/média_fases processuais_conhecimento.xlsx")
 
-writexl::write_xlsx(media_fases,
-                    "data/output/SireneJud/média_fases processuais_sem filtro.xlsx")
-
-writexl::write_xlsx(momentos2,
-                    "data/output/SireneJud/momentos processuais_conhecimento.xlsx")
+writexl::write_xlsx(media_momentos,
+                    "data/output/DataJud/média_fases processuais_sem filtro.xlsx")
 
 writexl::write_xlsx(momentos2,
-                    "data/output/SireneJud/momentos processuais_sem filtro.xlsx")
+                    "data/output/DataJud/momentos processuais_conhecimento.xlsx")
+
+writexl::write_xlsx(momentos2,
+                    "data/output/DataJud/momentos processuais_sem filtro.xlsx")

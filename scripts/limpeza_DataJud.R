@@ -57,7 +57,7 @@ df <- df %>%
 ## Atualizando informações das coordenadas geográficas
 
 df <- left_join(df,
-                geom)
+                geom) 
 
 ## Estruturando as coordenadas geográficas 
 ## e ajustando outros detalhes
@@ -67,6 +67,8 @@ df <- df %>%
           c('lat', 'lon'),
             '\\((.*) (.*)\\)',
             convert = TRUE) %>%
+  rename("lat" = "lon",
+         "lon" = "lat") %>% 
   mutate(municipio = rm_accent(municipio),
          ano_v2 = str_sub(numprocess,
                           12,
@@ -209,8 +211,7 @@ partes_pa_agg <- aggregate(nome_pa ~ numprocess + grau + tipoPessoa_pa,
 ## Preparando os dados para o join
 
 partes_pa <- partes_pa %>% 
-  select(-nome_pa,
-         -numeroDocumentoPrincipal_pa) %>% 
+  select(-nome_pa) %>% 
   unique()
 
 ## Juntando os dados tratados
@@ -219,7 +220,13 @@ partes_pa <- left_join(partes_pa,
                        partes_pa_agg) %>% 
   select(numprocess:polo_pa,
          nome_pa,
-         sexo_pa:tipoPessoa_pa)
+         sexo_pa:numeroDocumentoPrincipal_pa) %>% 
+  mutate(numeroDocumentoPrincipal_pa = ifelse(tipoPessoa_pa == "JURIDICA",
+                                              str_pad(numeroDocumentoPrincipal_pa,
+                                                      width = 14,
+                                                      side = "left",
+                                                      pad = "0"),
+                                              numeroDocumentoPrincipal_pa))
 
 ### 2.1.2. Polo ativo -------------------------------------------------------
 
@@ -232,7 +239,7 @@ partes_at <- df %>%
          partes_at_list) %>% 
   unique()
 
-## Reorganizando os dados do POLO PASSIVO
+## Reorganizando os dados do POLO ATIVO
 
 partes_at <- partes_at %>% 
   mutate(across(everything(), 
@@ -317,8 +324,7 @@ partes_at_agg <- aggregate(nome_at ~ numprocess + grau + tipoPessoa_at,
 ## Preparando os dados para o join
 
 partes_at <- partes_at %>% 
-  select(-nome_at,
-         -numeroDocumentoPrincipal_at) %>% 
+  select(-nome_at) %>% 
   unique()
 
 ## Juntando os dados tratados
@@ -327,7 +333,13 @@ partes_at <- left_join(partes_at,
                        partes_at_agg) %>% 
   select(numprocess:polo_at,
          nome_at,
-         sexo_at:tipoPessoa_at)
+         sexo_at:numeroDocumentoPrincipal_at) %>% 
+  mutate(numeroDocumentoPrincipal_at = ifelse(tipoPessoa_at == "JURIDICA",
+                                              str_pad(numeroDocumentoPrincipal_at,
+                                                      width = 14,
+                                                      side = "left",
+                                                      pad = "0"),
+                                              numeroDocumentoPrincipal_at))
 
 ### 2.1.3. Terceiros --------------------------------------------------------
 
@@ -1106,7 +1118,7 @@ write.csv(filtrado,
           row.names = F)
 
 saveRDS(filtrado,
-        "data/output/DataJud/datajud_filt_v18102022.rds")
+        "data/output/DataJud/datajud_filt_v26102022.rds")
 
 ## Movimentações
 

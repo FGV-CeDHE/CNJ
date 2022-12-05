@@ -5,10 +5,11 @@
 
 ## PACOTES UTILIZADOS
 
+library(plyr)
 library(tidyverse)
-library(sf)
 library(data.table)
 library(abjutils)
+library(tm)
 
 ## PREPARANDO O AMBIENTE
 
@@ -16,95 +17,239 @@ setwd("CNJ")
 
 # 1. Dados ----------------------------------------------------------------
 
-diretorio <- "data/input/Módulo de Produtividade Mensal/"
+## Carregando os dados de referência
 
-## 1.1. STF ----------------------------------------------------------------
+produtservent <- read_delim("data/input/Módulo de Produtividade Mensal/produtividade_serventias_unidade jud_14112022.csv", 
+                            delim = ";", 
+                            escape_double = FALSE, 
+                            trim_ws = TRUE)
 
-infoservent_STF <- read_delim(paste0(diretorio,
-                                     "Dados desagregados/STF/moduloprod_infoservent_STF_03082022.csv"), 
-                               delim = ";", 
-                               escape_double = FALSE, 
-                               col_types = cols(`Indicador Valor` = col_number()), 
-                               trim_ws = TRUE)
+produtmagistr <- read_delim("data/input/Módulo de Produtividade Mensal/produtividade_magistrados_unidade jud_14112022.csv", 
+                            delim = ";", 
+                            escape_double = FALSE, 
+                            trim_ws = TRUE)
 
-## 1.2. STJ ----------------------------------------------------------------
+codigo <- readxl::read_xlsx("data/input/DataJud/seqorgaos_amazônia legal.xlsx")
 
-infomagistr_STJ <- read_delim(paste0(diretorio,
-                              "Dados desagregados/STJ/moduloprod_infomagistr_STJ_03082022.csv"), 
-                               delim = ";", 
-                               escape_double = FALSE, 
-                               col_types = cols(`Indicador Valor` = col_number()), 
-                               trim_ws = TRUE)
+municipios <-  readxl::read_xls("data/input/SireneJud/municípios_amazônia legal_2020.xls")
 
-## 1.3. TJAM ---------------------------------------------------------------
+ambiental <- readxl::read_xlsx("data/input/Módulo de Produtividade Mensal/orgãos_competência ambiental_03122022.xlsx")
 
-## Carregando as informações do STF
+## 1.1. Limpeza ------------------------------------------------------------
 
-infomagistr_TJAM <- read_delim(paste0(diretorio,
-                                      "Dados desagregados/TJAM/moduloprod_infomagistr_TJAM_03082022.csv"), 
-                               delim = ";", 
-                               escape_double = FALSE, 
-                               col_types = cols(`Indicador Valor` = col_number()), 
-                               trim_ws = TRUE)
+### 1.1.1. Municipios -------------------------------------------------------
 
-infoservent_TJAM <- read_delim(paste0(diretorio,
-                                      "Dados desagregados/TJAM/moduloprod_infoservent_TJAM_03082022.csv"), 
-                              delim = ";", 
-                              escape_double = FALSE, 
-                              col_types = cols(`Indicador Valor` = col_number()), 
-                              trim_ws = TRUE)
+## Adequando o formato dos dados
 
-magistr_TJAM <- read_delim(paste0(diretorio,
-                                  "Dados desagregados/TJAM/moduloprod_magistr_TJAM_03082022.csv"), 
-                           delim = ";", 
-                           escape_double = FALSE, 
-                           trim_ws = TRUE)
+municipios <- municipios %>% 
+  mutate(NM_MUN = str_to_upper(rm_accent(NM_MUN)),
+         NM_MUN = ifelse(CD_MUN == 1100049,
+                         "CACOAL",
+                         NM_MUN))
 
-servent_TJAM <- read_delim(paste0(diretorio,
-                                  "Dados desagregados/TJAM/moduloprod_servent_TJAM_03082022.csv"), 
-                           delim = ";", 
-                           escape_double = FALSE,
-                           trim_ws = TRUE)
+### 1.1.2. Codigos dos Orgaos Julgadores ------------------------------------
 
-serventpendt_TJAM <- read_delim(paste0(diretorio,
-                                       "Dados desagregados/TJAM/moduloprod_serventpendt_TJAM_03082022.csv"), 
-                           delim = ";", 
-                           escape_double = FALSE,
-                           trim_ws = TRUE)
+## Filtrando somente os orgaos atuantes na
+## Amazônia Legal
 
-## 1.4. TJMT ---------------------------------------------------------------
+codigo <- codigo %>%
+  mutate(Municipio = rm_accent(Municipio),
+         OrgaoJulgador = rm_accent(OrgaoJulgador)) %>% 
+  filter(UF %in% municipios$SIGLA &
+         Municipio %in% municipios$NM_MUN)
 
-infomagistr_TJMT <- read_delim(paste0(diretorio,
-                                      "Dados desagregados/TJMT/moduloprod_infomagistr_TJMT_03082022.csv"), 
-                               delim = ";", 
-                               escape_double = FALSE, 
-                               col_types = cols(`Indicador Valor` = col_number()), 
-                               trim_ws = TRUE)
+### 1.1.3. Serventias -------------------------------------------------------
 
-## 1.5. TJPA ---------------------------------------------------------------
+## Reorganizando os dados
 
-infomagistr_TJPA <- read_delim(paste0(diretorio,
-                                      "Dados desagregados/TJPA/moduloprod_infomagistr_TJPA_03082022.csv"), 
-                               delim = ";", 
-                               escape_double = FALSE, 
-                               col_types = cols(`Indicador Valor` = col_number()), 
-                               trim_ws = TRUE)
+produtservent <- produtservent %>%
+  select(-Tipo...2,
+         -Classificação,
+         -Ano) %>% 
+  pivot_longer(cols = `2015`:`2021`, 
+               names_to = "Ano",
+               values_to = "Total") %>% 
+  rename("SiglaTribunal" = "Sigla",
+         "CodigoUnidadeJud" = "Código",
+         "UnidadeJudiciaria" = "Unidade Judiciária",
+         "Municipio" = "Município",
+         "Tipo" = "Tipo...8",
+         "Descricao" = "Descrição") %>% 
+  mutate(Total = gsub("\\.",
+                      "",
+                      Total),
+         Total = as.numeric(gsub("\\-",
+                                 "",
+                                 Total)),
+         CodigoUnidadeJud = str_pad(CodigoUnidadeJud,
+                                    width = 5,
+                                    side = "left",
+                                    pad = "0")) %>% 
+  filter(Tipo %in% c("SENTENÇAS",
+                     "SENTENÇAS HOMOLOGATÓRIAS",
+                     "OUTRAS SENTENÇAS") &
+         Descricao != "PENDENTES") 
 
-## 1.6. TJRO ---------------------------------------------------------------
+## Criando um banco com somente a produtividades
+## das serventias da Amazônia Legal
 
-infomagistr_TJRO <- read_delim(paste0(diretorio,
-                                      "Dados desagregados/TJRO/moduloprod_infomagistr_TJRO_03082022.csv"), 
-                               delim = ";", 
-                               escape_double = FALSE, 
-                               col_types = cols(`Indicador Valor` = col_number()), 
-                               trim_ws = TRUE)
+produtservent_ambt <- produtservent %>%
+  filter(CodigoUnidadeJud %in% unique(codigo$CodigoOrgao))
 
-## 1.7. TRF1 ---------------------------------------------------------------
+### 1.1.4. Magistrados ------------------------------------------------------
 
-infomagistr_TRF1 <- read_delim(paste0(diretorio,
-                                      "Dados desagregados/TRF1/moduloprod_infomagistr_TRF1_03082022.csv"), 
-                               delim = ";", 
-                               escape_double = FALSE, 
-                               col_types = cols(`Indicador Valor` = col_number()), 
-                               trim_ws = TRUE)
+## Reorganizando os dados
 
+produtmagistr <- produtmagistr %>% 
+  select(-`...8`) %>% 
+  pivot_longer(cols = `2015`:`2021`, 
+               names_to = "Ano",
+               values_to = "Total") %>% 
+  rename("SiglaTribunal" = "Tribunal",
+         "Municipio" = "Município",
+         "UnidadeJudiciaria" = "Unidade Judiciária") %>% 
+  mutate(Total = gsub("\\.",
+                      "",
+                      Total),
+         Total = as.numeric(gsub("\\-",
+                                 "",
+                                 Total)),
+         UnidadeJudiciaria = str_to_upper(rm_accent(UnidadeJudiciaria)),
+         UnidadeJudiciaria = stripWhitespace(trimws(str_squish(UnidadeJudiciaria))),
+         Municipio = str_to_upper(rm_accent(Municipio)),
+         Municipio = stripWhitespace(trimws(str_squish(Municipio)))) %>% 
+  select(Ano,
+         SiglaTribunal,
+         UF,
+         Municipio,
+         UnidadeJudiciaria,
+         Magistrado,
+         Tipo,
+         Detalhamento,
+         Total)
+
+## Criando uma versão somente com os dados das unidades judiciárias
+## atuantes na Amazônia Legal
+
+produtmagistr_ambt <- produtmagistr %>% 
+  filter(UnidadeJudiciaria %in% unique(codigo$OrgaoJulgador) &
+         UF %in% unique(codigo$UF) &
+         Municipio %in% unique(codigo$Municipio)) 
+
+# 2. Agrupando ------------------------------------------------------------
+
+## 2.1. Sentenças ----------------------------------------------------------
+
+## Verificandoo o total de sentenças dadas por ano nas
+## serventias gerais
+
+sentencas <- produtservent %>%
+  group_by(Ano,
+           SiglaTribunal,
+           CodigoUnidadeJud,
+           UnidadeJudiciaria) %>% 
+  summarise(TotalSentencas = sum(Total,
+                        na.rm = TRUE)) %>% 
+  unique()
+
+## Verificandoo o total de sentenças dadas por ano nas
+## atuantes na amazônia legal
+
+sentencas_ambt <- produtservent_ambt %>%
+  group_by(Ano,
+           SiglaTribunal,
+           CodigoUnidadeJud,
+           UnidadeJudiciaria) %>% 
+  summarise(TotalSentencas = sum(Total,
+                        na.rm = TRUE)) %>% 
+  unique()
+
+## 2.2. Magistrados --------------------------------------------------------
+
+## Verificando quantos juízes diferentes passaram pelas unidades 
+## judiciárias gerais
+
+magistrados <- produtmagistr %>%
+  select(Ano,
+         SiglaTribunal,
+         UnidadeJudiciaria,
+         Magistrado) %>%
+  unique() %>% 
+  group_by(Ano,
+           SiglaTribunal,
+           UnidadeJudiciaria) %>% 
+  summarise(TotalJuizes = n()) %>% 
+  unique()
+
+## Verificando quantos juízes diferentes passaram pelas unidades 
+## judiciárias atuantes na Amazônia Legal
+
+magistrados_ambt <- produtmagistr_ambt %>%
+  select(Ano,
+         SiglaTribunal,
+         UnidadeJudiciaria,
+         Magistrado) %>%
+  unique() %>% 
+  group_by(Ano,
+           SiglaTribunal,
+           UnidadeJudiciaria) %>% 
+  summarise(TotalJuizes = n()) %>% 
+  unique()
+
+# 3. Join -----------------------------------------------------------------
+
+## Juntando com os dados gerais e ambientais com os
+## dados dos magistrados
+
+magistrados <- left_join(magistrados,
+                         sentencas) %>% 
+  unique() %>% 
+  filter(!is.na(TotalSentencas)) %>% 
+  group_by(SiglaTribunal,
+           CodigoUnidadeJud,
+           UnidadeJudiciaria) %>% 
+  summarise(TotalSentencas = mean(TotalSentencas,
+                                  na.rm = TRUE),
+            TotalJuizes = mean(TotalJuizes,
+                               na.rm = TRUE)) 
+
+magistrados_ambt <- left_join(magistrados_ambt,
+                              sentencas_ambt) %>% 
+  unique() %>% 
+  filter(!is.na(TotalSentencas)) %>% 
+  group_by(SiglaTribunal,
+           CodigoUnidadeJud,
+           UnidadeJudiciaria) %>% 
+  summarise(TotalSentencas = mean(TotalSentencas,
+                                  na.rm = TRUE),
+            TotalJuizes = mean(TotalJuizes,
+                               na.rm = TRUE)) %>% 
+  mutate(Tipo = ifelse(CodigoUnidadeJud %in% ambiental$CodigoOrgao,
+                       "Competência Ambiental",
+                       "Outras Competências"))
+
+# 4. Salva ----------------------------------------------------------------
+
+## 4.1. Geral --------------------------------------------------------------
+
+saveRDS(produtservent,
+        "data/output/Módulo de Produtividade/produtividade_unidade jud gerais_05122022.rds")
+
+saveRDS(produtmagistr,
+        "data/output/Módulo de Produtividade/produtividade_magistrados_unidade jud gerais_05122022.rds")
+
+saveRDS(magistrados,
+        "data/output/Módulo de Produtividade/relação sentenças x juízes_unidade jud gerais_05122022.rds")
+
+## 4.2. Amazônia Legal -----------------------------------------------------
+
+## Salva os dados gerados
+
+saveRDS(produtservent_ambt,
+        "data/output/Módulo de Produtividade/produtividade_unidade jud ambientais_05122022.rds")
+
+saveRDS(produtmagistr_ambt,
+        "data/output/Módulo de Produtividade/produtividade_magistrados_unidade jud ambientais_05122022.rds")
+
+saveRDS(magistrados_ambt,
+        "data/output/Módulo de Produtividade/relação sentenças x juízes_unidade jud ambientais_05122022.rds")

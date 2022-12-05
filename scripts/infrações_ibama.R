@@ -5,9 +5,8 @@
 
 ## PACOTES UTILIZADOS
 
-# remotes::install_github("cccneto/Ibamam", 
-#                         force = TRUE)
-
+library(plyr)
+library(tidyverse)
 library(Ibamam)
 
 ## AMBIENTE
@@ -16,5 +15,6 @@ setwd("CNJ")
 
 # 1. Data -----------------------------------------------------------------
 
-df <- get_dataset_ibamam(dataset = "distribuidas")
+df <- read_delim("data/input/Ibama/auto_infracao.csv", 
+                 delim = ";", escape_double = FALSE, trim_ws = TRUE)
 

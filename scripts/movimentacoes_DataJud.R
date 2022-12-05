@@ -21,31 +21,12 @@ setwd("CNJ")
 
 ## Carregando os dados de referência
 
-datajud <- readRDS("data/output/SireneJud/sirenejud_allvars_filt_v18102022.rds")
-
-codigo <- readxl::read_xlsx("data/output/DataJud/cod_movimentos.xlsx")
-
-## Alterando o nome da variável
-
-codigo <- codigo %>% 
-  dplyr::rename("nome_movimento" = "Descrição") %>% 
-  mutate(nome_movimento = str_to_upper(nome_movimento)) %>% 
-  dplyr::select(-Glossário) %>% 
-  unique()
+movimentos <- readRDS("data/output/DataJud/datajud_movimentos_v26102022.rds")
 
 ## Selecionando somente os casos que interessam no DataJud
 
-movimentos <- datajud %>% 
-  filter(dt_inicio_situacao_novo_v2 >= "2020") %>% 
-  select(numprocess,
-         data_ajuizamento,
-         dt_inicio_situacao_novo,
-         dt_inicio_situacao_novo_v2,
-         uf,
-         municipio,
-         grau,
-         tribunal,
-         movimento) %>% 
+movimentos <- movimentos %>% 
+  filter(ano_inicio_situacao_novo >= "2020") %>% 
   unique()
 
 ## Reorganizando os dados
@@ -113,21 +94,4 @@ movimentos <- movimentos %>%
 ## Salvando os dados brutos
 
 saveRDS(movimentos,
-        "data/output/SireneJud/movimentações_v18102022.rds")
-
-# 2. Join -----------------------------------------------------------------
-
-## Juntando com os códigos dos movimentos
-
-movimentos <- left_join(movimentos,
-                        codigo) %>%
-  unique() %>%
-  mutate(movimento = paste0(`Código`,
-                            " - ",
-                            nome_movimento),
-         criminal = ifelse(criminal == "TRUE",
-                           1,
-                           0)) %>%
-  select(numprocess:nome_natureza_procedimento,
-         movimento,
-         nome_julgador:criminal)
+        "data/output/DataJud/movimentações_v26102022.rds")

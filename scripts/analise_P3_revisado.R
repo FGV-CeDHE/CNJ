@@ -807,8 +807,10 @@ ggsave(filename = "data/output/figura 12_assuntos.png",
 # 2.11. Movimentações -----------------------------------------------------
 
 movimentos2 <- movimentos %>% 
+  filter(!nome_situacao %in% c("PENDENTE",
+                               "TRAMITANDO")) %>%
   filter(nome_movimento != "NÃO INFORMADO" &
-           sigla_grau == "G1") %>% 
+         sigla_grau == "G1") %>% 
   mutate(dt_inicio_situacao_novo = as.Date(dt_inicio_situacao_novo,
                                            format = "%Y-%m-%d"),
          dt_inicio_situacao = as.Date(dt_inicio_situacao,
