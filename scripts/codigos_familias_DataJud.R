@@ -1,27 +1,41 @@
 
-## TÍTULO: COLETA DE CÓDIGOS E DESCRIÇÕES DAS CLASSES,
-## ASSUNTOS E MOVIMENTOS.
+## TÍTULO: HIERARQUIA DAS CLASSES, ASSUNTOS E MOVIMENTOS (TPU)
 ## AUTORA: REBECA CARVALHO
-## DATA: 05/06/2022
+## DATA: 20/10/2022
 
 ## PACOTES UTILIZADOS
 
 library(plyr)
 library(tidyverse)
-library(RCurl)
-library(XML)
-library(gsubfn)
 library(tm)
 
-## FUNÇÃO DE REFERÊNCIA
+## OBJETIVOS
 
-source("http://pastebin.com/raw.php?i=XtzN1NMs")
+#'         - Coletar as hierarquias das classes, assuntos e movimentos
+#'           presentes na base do DataJud a partir dos códigos.
 
-strdehtml <- function(s) {
-  ret <- gsubfn("&#([0-9]+);", function(x) rawToChar(as.raw(as.numeric(x))), s)
-  ret <- gsubfn("&([^;]+);", function(x) htmlchars[x], ret)
-  return(ret)
-}
+## FUNÇÕES
+
+source("functions/TPUnamesA.R", 
+       encoding = "UTF-8")
+
+source("functions/TPUnamesC.R", 
+       encoding = "UTF-8")
+
+source("functions/TPUnamesM.R", 
+       encoding = "UTF-8")
+
+source("functions/TPUfamilyA.R", 
+       encoding = "UTF-8")
+
+source("functions/TPUfamilyC.R", 
+       encoding = "UTF-8")
+
+source("functions/TPUfamilyM.R", 
+       encoding = "UTF-8")
+
+source("functions/strdehtml.R", 
+       encoding = "UTF-8")
 
 ## PREPARANDO O AMBIENTE
 
@@ -40,41 +54,6 @@ df <- readRDS("data/output/DataJud/dataJud_final_17072022.rds")
 
 classes <- unique(parse_number(df$ClasseProcessual))
 
-## Carregando a função que coleta
-## as descrições das classes
-
-retorna_familia_codigo_TPU <- function(codigo, dt_frame=F){
-  
-  body = paste0('<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sgt="https://www.cnj.jus.br/sgt/sgt_ws.php">
-     <soapenv:Header/>
-     <soapenv:Body>
-        <sgt:getStringPaisItemPublicoWS>
-           <seqItem>', codigo, '</seqItem>
-            <tipoItem>C</tipoItem>
-        </sgt:getStringPaisItemPublicoWS>
-     </soapenv:Body>
-  </soapenv:Envelope>')
-  
-  reader = basicTextGatherer()
-  
-  curlPerform(
-    url = "https://www.cnj.jus.br/sgt/sgt_ws.php",
-    postfields = body,
-    writefunction = reader$update
-  )
-  
-  xml <- reader$value()
-  
-  aux <- xmlToList(XML::xmlParse(xml))
-  
-  data_aux = data_frame(familia = aux$Body$getStringPaisItemPublicoWSResponse$return,
-                        codigo = codigo)
-  
-  if(dt_frame == T) return(data_aux)
-  
-  return(aux$Body$getStringPaisItemPublicoWSResponse$return)
-}
-
 ## Data frame onde os dados serão
 ## armazenados posteriormente
 
@@ -87,8 +66,8 @@ for(i in seq_along(classes)){
   cat("Lendo", i, "\n")
   
   
-  temp <- retorna_familia_codigo_TPU(classes[i],
-                                     dt_frame = TRUE)
+  temp <- retorna_familia_TPU_C(classes[i],
+                                dt_frame = TRUE)
   
   cod_classes <- rbind.fill(cod_classes,
                             temp)
@@ -102,14 +81,6 @@ cod_classes <- cod_classes %>%
          "Código" = "codigo") %>% 
   arrange(Código) 
 
-## Salvando os dados
-
-saveRDS(cod_classes,
-        "data/output/DataJud/familias_cod_classes.rds")
-
-writexl::write_xlsx(cod_classes,
-                    "data/output/DataJud/familias_cod_classes.xlsx")
-
 ## 1.2. Assuntos -----------------------------------------------------------
 
 ## Verificando quantos movimentos distintos 
@@ -120,40 +91,6 @@ assuntos <- unique(c(unlist(str_split(parse_number(df$Assunto),
 
 assuntos <- unique(cod_assuntos$Código)
 
-## Carregando a função que coleta
-## as descrições das classes
-
-retorna_familia_codigo_TPU <- function(codigo, dt_frame=F){
-  
-  body = paste0('<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sgt="https://www.cnj.jus.br/sgt/sgt_ws.php">
-     <soapenv:Header/>
-     <soapenv:Body>
-        <sgt:getStringPaisItemPublicoWS>
-           <seqItem>', codigo, '</seqItem>
-            <tipoItem>A</tipoItem>
-        </sgt:getStringPaisItemPublicoWS>
-     </soapenv:Body>
-  </soapenv:Envelope>')
-  
-  reader = basicTextGatherer()
-  
-  curlPerform(
-    url = "https://www.cnj.jus.br/sgt/sgt_ws.php",
-    postfields = body,
-    writefunction = reader$update
-  )
-  
-  xml <- reader$value()
-  
-  aux <- xmlToList(XML::xmlParse(xml))
-  
-  data_aux = data_frame(familia = aux$Body$getStringPaisItemPublicoWSResponse$return,
-                        codigo = codigo)
-  
-  if(dt_frame == T) return(data_aux)
-  
-  return(aux$Body$getStringPaisItemPublicoWSResponse$return)
-}
 
 ## Data frame onde os dados serão
 ## armazenados posteriormente
@@ -167,8 +104,8 @@ for(i in seq_along(assuntos)){
   cat("Lendo", i, "\n")
   
   
-  temp <- retorna_familia_codigo_TPU(assuntos[i],
-                                  dt_frame = TRUE)
+  temp <- retorna_familia_TPU_A(assuntos[i],
+                                dt_frame = TRUE)
   
   cod_assuntos <- rbind.fill(cod_assuntos,
                              temp)
@@ -182,14 +119,6 @@ cod_assuntos <- cod_assuntos %>%
          "Código" = "codigo") %>% 
   arrange(Código)
 
-## Salvando os dados
-
-saveRDS(cod_assuntos,
-        "data/output/DataJud/familias_cod_assuntos.rds")
-
-writexl::write_xlsx(cod_assuntos,
-                    "data/output/DataJud/familias_cod_assuntos.xlsx")
-
 ## 1.3. Movimentos ---------------------------------------------------------
 
 ## Verificando quantos movimentos distintos 
@@ -199,41 +128,6 @@ movimentos <- unique(c(unlist(str_split(df$CodigoNacionalMovimento,
                                         " / "))))
 
 movimentos <- unique(cod_movimentos$Código)
-
-## Carregando a função que coleta
-## as descrições dos movimentos
-
-retorna_familia_codigo_TPU <- function(codigo, dt_frame=F){
-  
-  body = paste0('<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sgt="https://www.cnj.jus.br/sgt/sgt_ws.php">
-     <soapenv:Header/>
-     <soapenv:Body>
-        <sgt:getStringPaisItemPublicoWS>
-           <seqItem>', codigo, '</seqItem>
-            <tipoItem>M</tipoItem>
-        </sgt:getStringPaisItemPublicoWS>
-     </soapenv:Body>
-  </soapenv:Envelope>')
-  
-  reader = basicTextGatherer()
-  
-  curlPerform(
-    url = "https://www.cnj.jus.br/sgt/sgt_ws.php",
-    postfields = body,
-    writefunction = reader$update
-  )
-  
-  xml <- reader$value()
-  
-  aux <- xmlToList(XML::xmlParse(xml))
-  
-  data_aux = data_frame(familia = aux$Body$getStringPaisItemPublicoWSResponse$return,
-                        codigo = codigo)
-  
-  if(dt_frame == T) return(data_aux)
-  
-  return(aux$Body$getStringPaisItemPublicoWSResponse$return)
-}
 
 ## Data frame onde os dados serão
 ## armazenados posteriormente
@@ -264,6 +158,8 @@ cod_movimentos <- cod_movimentos %>%
 
 # 2. Limpeza --------------------------------------------------------------
 
+## 2.1. Classes Processuais ------------------------------------------------
+
 ## Separando os códigos em diferentes colunas
 
 cod_classes <- cod_classes %>% 
@@ -273,12 +169,21 @@ cod_classes <- cod_classes %>%
   rename("codigo_06" = "Código") %>% 
   mutate(codigo_06 = as.character(codigo_06))
 
+## 2.2. Assuntos -----------------------------------------------------------
+
+## Separando os códigos em diferentes colunas
+
 cod_assuntos <- cod_assuntos %>% 
   separate(Família,
            into = paste0("codigo_0", 1:5),
            sep = ",") %>% 
   rename("codigo_06" = "Código") %>% 
   mutate(codigo_06 = as.character(codigo_06))
+
+
+## 2.3. Movimentos ---------------------------------------------------------
+
+## Separando os códigos em diferentes colunas
 
 cod_movimentos <- cod_movimentos %>% 
   separate(Família,
@@ -293,46 +198,9 @@ cod_movimentos <- cod_movimentos %>%
 
 ## 3.1. Classes Processuais ------------------------------------------------
 
-## Carregando a função que coleta
-## as descrições das classes
-
-retorna_nome_codigo_TPU <- function(codigo, dt_frame=F){
-  
-  body = paste0('<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sgt="https://www.cnj.jus.br/sgt/sgt_ws.php">
-     <soapenv:Header/>
-     <soapenv:Body>
-        <sgt:pesquisarItemPublicoWS>
-           <tipoTabela>C</tipoTabela>
-           <tipoPesquisa>C</tipoPesquisa>
-           <valorPesquisa>',codigo,'</valorPesquisa>
-        </sgt:pesquisarItemPublicoWS>
-     </soapenv:Body>
-  </soapenv:Envelope>')
-  
-  reader = basicTextGatherer()
-  
-  curlPerform(
-    url = "https://www.cnj.jus.br/sgt/sgt_ws.php",
-    postfields = body,
-    writefunction = reader$update
-  )
-  
-  xml <- reader$value()
-  
-  aux <- xmlToList(XML::xmlParse(xml))
-  
-  data_aux = data_frame(codigo = aux$Body$pesquisarItemPublicoWSResponse$return$Item$cod_item,
-                        nome = aux$Body$pesquisarItemPublicoWSResponse$return$Item$nome,
-                        glossario =  aux$Body$pesquisarItemPublicoWSResponse$return$Item$dscGlossario)
-  
-  if(dt_frame == T) return(data_aux)
-  
-  return(aux$Body$pesquisarItemPublicoWSResponse$return$Item$nome)
-}
-
 ## Preparando o banco
 
-cod_classes2 <- cod_classes %>% 
+cod_classes <- cod_classes %>% 
   filter(codigo_06 != 0) %>% 
   mutate(descricao_01 = NA,
          glossario_01 = NA,
@@ -349,12 +217,12 @@ cod_classes2 <- cod_classes %>%
 
 ## Lista de códigos que serão buscados
 
-classes <- unique(c(cod_classes2$codigo_06,
-                    cod_classes2$codigo_05,
-                    cod_classes2$codigo_04,
-                    cod_classes2$codigo_03,
-                    cod_classes2$codigo_02,
-                    cod_classes2$codigo_01))
+classes <- unique(c(cod_classes$codigo_06,
+                    cod_classes$codigo_05,
+                    cod_classes$codigo_04,
+                    cod_classes$codigo_03,
+                    cod_classes$codigo_02,
+                    cod_classes$codigo_01))
 
 ## For loop que coleta as informações
 
@@ -363,17 +231,18 @@ for(i in seq_along(classes)){
   cat("Lendo", i, "\n")
   
   
-  temp <- retorna_nome_codigo_TPU(classes[i],
-                                  dt_frame = TRUE)
+  temp <- retorna_nome_codigo_TPU_C(classes[i],
+                                    dt_frame = TRUE)
   
   if(ncol(temp) < 3){
     
     temp$glossario <- NA
-  }
+  
+    }
   
   if(nrow(temp) == 1){
   
-  cod_classes2 <- cod_classes2 %>% 
+  cod_classes <- cod_classes %>% 
     mutate(descricao_01 = ifelse(codigo_01 == classes[i],
                                  temp$nome,
                                  descricao_01),
@@ -426,18 +295,16 @@ for(i in seq_along(classes)){
   
 }
 
-cod_classes2 <- cod_classes2 %>% 
+## Padronizando os dados
+
+cod_classes <- cod_classes %>% 
   mutate(across(everything(), as.character),
          across(starts_with("glossario"),
                 ~ str_remove_all(.,
                                  "<[^>]+>")),
          across(starts_with("glossario"),
                 stripWhitespace),
-         across(starts_with("glossario"), strdehtml))
-
-## Padronizando os dados
-
-cod_classes3 <- cod_classes2 %>%
+         across(starts_with("glossario"), strdehtml)) %>% 
   filter(!is.na(descricao_06)) %>% 
   mutate(across(starts_with("descricao"),
                 str_to_sentence),
@@ -517,58 +384,11 @@ cod_classes3 <- cod_classes2 %>%
   select(arvore_classe,
          codigo_01:glossario_06)
 
-## Salvando os dados
-
-saveRDS(cod_classes3,
-        "data/output/DataJud/familias_cod_classes.rds")
-
-writexl::write_xlsx(cod_classes3,
-                    "data/output/DataJud/familias_cod_classes.xlsx")
-
 ## 3.2. Assuntos -----------------------------------------------------------
-
-## Carregando a função que coleta
-## as descrições das classes
-
-retorna_nome_codigo_TPU <- function(codigo, dt_frame=F){
-  
-  body = paste0('<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sgt="https://www.cnj.jus.br/sgt/sgt_ws.php">
-     <soapenv:Header/>
-     <soapenv:Body>
-        <sgt:pesquisarItemPublicoWS>
-           <tipoTabela>A</tipoTabela>
-           <tipoPesquisa>C</tipoPesquisa>
-           <valorPesquisa>',codigo,'</valorPesquisa>
-        </sgt:pesquisarItemPublicoWS>
-     </soapenv:Body>
-  </soapenv:Envelope>')
-  
-  reader = basicTextGatherer()
-  
-  curlPerform(
-    url = "https://www.cnj.jus.br/sgt/sgt_ws.php",
-    # httpheader = headerfields,
-    postfields = body,
-    writefunction = reader$update
-  )
-  
-  xml <- reader$value()
-  
-  aux <- xmlToList(XML::xmlParse(xml))
-  
-  data_aux = data_frame(codigo = aux$Body$pesquisarItemPublicoWSResponse$return$Item$cod_item,
-                        nome = aux$Body$pesquisarItemPublicoWSResponse$return$Item$nome,
-                        glossario = aux$Body$pesquisarItemPublicoWSResponse$return$Item$dscGlossario)
-  
-  if(dt_frame==T) return(data_aux)
-  
-  return(aux$Body$pesquisarItemPublicoWSResponse$return$Item$nome)
-  
-}
 
 ## Preparando o banco
 
-cod_assuntos2 <- cod_assuntos %>% 
+cod_assuntos <- cod_assuntos %>% 
   filter(codigo_06 != 0) %>% 
   mutate(descricao_01 = NA,
          glossario_01 = NA,
@@ -585,12 +405,12 @@ cod_assuntos2 <- cod_assuntos %>%
 
 ## Lista de códigos que serão buscados
 
-assuntos <- unique(c(cod_assuntos2$codigo_06,
-                     cod_assuntos2$codigo_05,
-                     cod_assuntos2$codigo_04,
-                     cod_assuntos2$codigo_03,
-                     cod_assuntos2$codigo_02,
-                     cod_assuntos2$codigo_01))
+assuntos <- unique(c(cod_assuntos$codigo_06,
+                     cod_assuntos$codigo_05,
+                     cod_assuntos$codigo_04,
+                     cod_assuntos$codigo_03,
+                     cod_assuntos$codigo_02,
+                     cod_assuntos$codigo_01))
 
 ## For loop que coleta as informações
 
@@ -599,17 +419,18 @@ for(i in seq_along(assuntos)){
   cat("Lendo", i, "\n")
   
   
-  temp <- retorna_nome_codigo_TPU(assuntos[i],
-                                  dt_frame = TRUE)
+  temp <- retorna_nome_codigo_TPU_A(assuntos[i],
+                                    dt_frame = TRUE)
   
   if(ncol(temp) < 3){
     
     temp$glossario <- NA
-  }
+  
+    }
   
   if(nrow(temp) == 1){
     
-    cod_assuntos2 <- cod_assuntos2 %>% 
+    cod_assuntos <- cod_assuntos %>% 
       mutate(descricao_01 = ifelse(codigo_01 == assuntos[i],
                                    temp$nome,
                                    descricao_01),
@@ -662,18 +483,16 @@ for(i in seq_along(assuntos)){
   
 }
 
-cod_assuntos2 <- cod_assuntos2 %>% 
+## Padronizando os dados
+
+cod_assuntos <- cod_assuntos %>% 
   mutate(across(everything(), as.character),
          across(starts_with("glossario"),
                 ~ str_remove_all(.,
                                  "<[^>]+>")),
          across(starts_with("glossario"),
                 stripWhitespace),
-         across(starts_with("glossario"), strdehtml))
-
-## Padronizando os dados
-
-cod_assuntos3 <- cod_assuntos2 %>% 
+         across(starts_with("glossario"), strdehtml)) %>% 
   mutate(across(starts_with("descricao"),
                 str_to_sentence),
          arvore_assunto = paste0(codigo_01,
@@ -781,56 +600,11 @@ cod_assuntos3 <- cod_assuntos2 %>%
   select(arvore_assunto,
          codigo_01:glossario_06)
 
-## Salvando os dados
-
-saveRDS(cod_assuntos3,
-        "data/output/DataJud/familias_cod_assuntos.rds")
-
-writexl::write_xlsx(cod_assuntos3,
-                    "data/output/DataJud/familias_cod_assuntos.xlsx")
-
 ## 3.3. Movimentos ---------------------------------------------------------
-
-## Carregando a função que coleta
-## as descrições dos movimentos
-
-retorna_nome_codigo_TPU <- function(codigo, dt_frame=F){
-  
-  body = paste0('<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sgt="https://www.cnj.jus.br/sgt/sgt_ws.php">
-     <soapenv:Header/>
-     <soapenv:Body>
-        <sgt:pesquisarItemPublicoWS>
-           <tipoTabela>M</tipoTabela>
-           <tipoPesquisa>C</tipoPesquisa>
-           <valorPesquisa>',codigo,'</valorPesquisa>
-        </sgt:pesquisarItemPublicoWS>
-     </soapenv:Body>
-  </soapenv:Envelope>')
-  
-  reader = basicTextGatherer()
-  
-  curlPerform(
-    url = "https://www.cnj.jus.br/sgt/sgt_ws.php",
-    # httpheader = headerfields,
-    postfields = body,
-    writefunction = reader$update
-  )
-  
-  xml <- reader$value()
-  
-  aux <- xmlToList(XML::xmlParse(xml))
-  
-  data_aux = data_frame(codigo = aux$Body$pesquisarItemPublicoWSResponse$return$Item$cod_item,
-                        nome = aux$Body$pesquisarItemPublicoWSResponse$return$Item$nome,
-                        glossario = aux$Body$pesquisarItemPublicoWSResponse$return$Item$dscGlossario)
-  
-  if(dt_frame==T) return(data_aux)
-  return(aux$Body$pesquisarItemPublicoWSResponse$return$Item$nome)
-}
 
 ## Preparando o banco
 
-cod_movimentos2 <- cod_movimentos %>% 
+cod_movimentos <- cod_movimentos %>% 
   mutate(descricao_01 = NA,
          glossario_01 = NA,
          descricao_02 = NA,
@@ -844,11 +618,11 @@ cod_movimentos2 <- cod_movimentos %>%
 
 ## Lista de códigos que serão buscados
 
-movimentos <- unique(c(cod_movimentos2$codigo_05,
-                       cod_movimentos2$codigo_04,
-                       cod_movimentos2$codigo_03,
-                       cod_movimentos2$codigo_02,
-                       cod_movimentos2$codigo_01))
+movimentos <- unique(c(cod_movimentos$codigo_05,
+                       cod_movimentos$codigo_04,
+                       cod_movimentos$codigo_03,
+                       cod_movimentos$codigo_02,
+                       cod_movimentos$codigo_01))
 
 ## For loop que coleta as informações
 
@@ -857,8 +631,8 @@ for(i in seq_along(movimentos)){
   cat("Lendo", i, "\n")
   
   
-  temp <- retorna_nome_codigo_TPU(movimentos[i],
-                                  dt_frame = TRUE)
+  temp <- retorna_nome_codigo_TPU_M(movimentos[i],
+                                    dt_frame = TRUE)
   
   if(ncol(temp) < 3){
     
@@ -867,7 +641,7 @@ for(i in seq_along(movimentos)){
   
   if(nrow(temp) == 1){
     
-    cod_movimentos2 <- cod_movimentos2 %>% 
+    cod_movimentos <- cod_movimentos %>% 
       mutate(descricao_01 = ifelse(codigo_01 == movimentos[i],
                                    temp$nome,
                                    descricao_01),
@@ -908,22 +682,21 @@ for(i in seq_along(movimentos)){
              descricao_04:glossario_04,
              codigo_05,
              descricao_05:glossario_05)
-  }
+  
+    }
   
 }
 
-cod_movimentos2 <- cod_movimentos2 %>% 
+## Padronizando os dados
+
+cod_movimentos <- cod_movimentos %>% 
   mutate(across(everything(), as.character),
          across(starts_with("glossario"),
                 ~ str_remove_all(.,
                                  "<[^>]+>")),
          across(starts_with("glossario"),
                 stripWhitespace),
-         across(starts_with("glossario"), strdehtml))
-
-## Padronizando os dados
-
-cod_movimentos3 <- cod_movimento2 %>% 
+         across(starts_with("glossario"), strdehtml)) %>% 
   mutate(across(starts_with("descricao"),
                 str_to_sentence),
          arvore_movimento = paste0(codigo_01,
@@ -975,10 +748,22 @@ cod_movimentos3 <- cod_movimento2 %>%
   select(arvore_movimento,
          codigo_01:glossario_05)
 
-## Salvando os dados
+# 4. Salva ----------------------------------------------------------------
 
-saveRDS(cod_movimentos3,
+saveRDS(cod_classes,
+        "data/output/DataJud/familias_cod_classes.rds")
+
+writexl::write_xlsx(cod_classes,
+                    "data/output/DataJud/familias_cod_classes.xlsx")
+
+saveRDS(cod_assuntos,
+        "data/output/DataJud/familias_cod_assuntos.rds")
+
+writexl::write_xlsx(cod_assuntos,
+                    "data/output/DataJud/familias_cod_assuntos.xlsx")
+
+saveRDS(cod_movimentos,
         "data/output/DataJud/familias_cod_movimentos.rds")
 
-writexl::write_xlsx(cod_movimentos3,
+writexl::write_xlsx(cod_movimentos,
                     "data/output/DataJud/familias_cod_movimentos.xlsx")

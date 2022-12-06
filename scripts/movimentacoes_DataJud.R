@@ -1,5 +1,5 @@
 
-## TÍTULO: MOVIMENTAÇÕES DATAJUD - NOVA BASE DE 05/09/2022
+## TÍTULO: MOVIMENTAÇÕES PROCESSUAIS | DATAJUD
 ## AUTORA: REBECA CARVALHO
 ## DATA: 14/09/2022
 
@@ -13,6 +13,11 @@ library(data.table)
 library(tm)
 library(reshape2)
 
+## OBJETIVOS
+
+#'         - Extrair e reorganizar as movimentações
+#'           das ações ambientais selecionadas. 
+
 ## PREPARANDO O AMBIENTE
 
 setwd("CNJ")
@@ -22,6 +27,8 @@ setwd("CNJ")
 ## Carregando os dados de referência
 
 movimentos <- readRDS("data/output/DataJud/datajud_movimentos_v26102022.rds")
+
+## 1.1. Limpeza ------------------------------------------------------------
 
 ## Selecionando somente os casos que interessam no DataJud
 
@@ -90,6 +97,8 @@ movimentos <- movimentos %>%
                                     nome_movimento == "POR DECISÃO DO PRESIDENTE DO STF - IRDR" ~ "POR DECISÃO DO PRESIDENTE DO STF - SIRDR",
                                     nome_movimento == "SUMARÍSSIMO (ART. 852-B" ~ "SUMARÍSSIMO (ART. 852-B, § 1º/CLT)",
                                     T ~ as.character(nome_movimento)))
+
+# 2. Salva ----------------------------------------------------------------
 
 ## Salvando os dados brutos
 

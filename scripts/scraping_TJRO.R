@@ -10,6 +10,9 @@ library(tidyverse)
 library(abjutils)
 library(RSelenium)
 library(httr)
+library(qdapRegex)
+library(tm)
+library(gsubfn)
 
 ## OBJETIVOS
 
@@ -33,7 +36,7 @@ library(httr)
 
 #'           1. Processos publicados entre 01/01/2017 até 15/06/2022.
 
-## REPOSITÓRIO
+## DIRETÓRIO
 
 setwd("CNJ")
 
@@ -75,12 +78,6 @@ driver <- rsDriver(
 remDr <- driver[["client"]]
 
 # 2. Raspagem dos dados ---------------------------------------------------
-
-## 2.1. Acórdãos -----------------------------------------------------------
-
-## Alterando o diretório
-
-setwd("CeDHE")
 
 ## Criando uma data frame onde os dados serão armazenados
 
@@ -243,14 +240,6 @@ for(ano in anos){
   
   webElem00 <- remDr$findElement(using = "xpath", 
                                  '//*[@id="frmJuris:formConsultaJuris:btPesquisar"]')$clickElement()
-  
-  ## 05 informações disponíveis: 
-  
-  #'      1. ID;
-  #'      2. Data do Julgamento;
-  #'      3. Outras Informações (Relator, Órgão Julgador, etc)
-  #'      4. Ementa;
-  #'      5. Inteiro Teor.
 
   Sys.sleep(15)
 
@@ -659,16 +648,12 @@ for(ano in anos){
     }
 }
 
-setwd("C:/Users/beca_/OneDrive - usp.br/Documentos/CeDHE")
-
 ## Salvando o banco
 
 saveRDS(df_final,
         "data/output/TJRO/acórdãos_TJRO_12072022_temp.rds")
 
 # 3. Limpeza --------------------------------------------------------------
-
-## 3.1. Acórdãos -----------------------------------------------------------
 
 ## Carregando o dado salvo
 
@@ -1395,9 +1380,6 @@ write.csv(df_final_filtros,
           "data/output/TJRO/acórdãos_TJRO_26102022_com filtros.csv",
           row.names = FALSE,
           fileEncoding = "UTF-8")
-
-writexl::write_xlsx(df_final_filtros,
-                    "data/output/TJRO/acórdãos_TJRO_26102022_com filtros.csv")
 
 saveRDS(df_final_filtros,
         "data/output/TJRO/acórdãos_TJRO_26102022_com filtros.rds")

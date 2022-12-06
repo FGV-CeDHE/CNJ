@@ -1,6 +1,5 @@
 
-## TÍTULO: LEITURA E ANÁLISE DE PROCESSOS FAVORÁVEIS E DESFAVORÁVEIS
-## A PROTEÇÃO DO MEIO AMBIENTE
+## TÍTULO: LEITURA E ANÁLISE AUTOMATIZADA DE AÇÕES AMBIENTAIS - ABORDAGEM QUALITATIVA
 ## DATA: 28/07/2022
 ## AUTOR: REBECA CARVALHO
 
@@ -9,16 +8,19 @@
 library(plyr)
 library(tidyverse)
 library(pdftools)
-library(readr)
- library(readtext)
 library(tm)
 library(ptstem)
 library(stringi)
-library(wordcloud)
 library(abjutils)
 library(extrafont)
-library(geobr)
 library(data.table)
+
+## OBJETIVOS
+
+#'         - Realizar extração do interior teor dos acórdãos nos PDFs coletados.
+#'         - Usar o texto extraído para a classificação automática das ações ambientais
+#'           em três variáveis distintas: "10 RECORRENTE", "11 SETOR ECONÔMICO" 
+#'           e "12 ELEMENTOS PROBATÓRIOS".
 
 ## PREPARANDO O AMBIENTE
 

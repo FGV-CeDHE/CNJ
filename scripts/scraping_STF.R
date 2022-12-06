@@ -1,8 +1,12 @@
 
-source("functions/wordFilter.R", 
-       encoding = "UTF-8")
+## DIRETÓRIO
 
 setwd("CNJ")
+
+## FUNÇÕES
+
+source("functions/wordFilter.R", 
+       encoding = "UTF-8")
 
 #função de mineração do TST
 minera_objeto_unitario <- function(client, download=F,fat_temp=1){

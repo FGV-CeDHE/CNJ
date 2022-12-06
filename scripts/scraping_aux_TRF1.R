@@ -13,25 +13,8 @@ library(httr)
 
 ## OBJETIVOS
 
-#'         - Realizar raspagem de dados da jurisprudência 
-#'           disponibilizada no site https://portal.trf1.jus.br/portaltrf1/pagina-inicial.htm.
-
-#'         - Coleta do máximo possível de metadados e documentos.
-
-#'         - PALAVRAS-CHAVE: 1. Ementa; 2. Lei e 3. Documento.
-
-#'         - INFORMAÇÕES IMPORTANTES: 
-
-#'           1. Identificador Único;
-#'           2. Partes;
-#'           3. Ementa ou Inteiro Teor;
-#'           4. URL;
-#'           5. Órgão Julgador;
-#'           6. Data de Publicação.
-
-#'         - PERÍODO: 
-
-#'           1. Processos julgados entre 01/01/2017 até 15/06/2022.
+#'         - Realizar raspagem de dados complementar para obter
+#'           a unidade de origem das ações ambientais do TRF1.
 
 ## AMBIENTE DE TRABALHO
 
@@ -46,22 +29,7 @@ source("functions/windowSwitch.R",
 
 ## Carregando os processos de referência
 
-processos_2018_2019 <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2018-2019.xlsx")
-
-processos_2020 <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2020.xlsx")
-
-processos_2021 <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2021.xlsx")
-
-## Empilhando os dados
-
-processos <- rbind.fill(processos_2018_2019,
-                        processos_2020,
-                        processos_2021)
-
-## Filtrando somente os anos necessários
-
-processos <- processos %>% 
-  filter(lubridate::year(DataJulgamento) %in% c(2020, 2021))
+processos <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2018-2021.xlsx")
 
 ## Deixando somente os números dos processos
 
@@ -90,8 +58,8 @@ remDr$navigate(url_base)
 
 ## Criando uma data frame onde os dados serão armazenados
 
-# df_final <- data.frame(Numero = NA,
-#                        NumeroOriginal = NA)
+df_final <- data.frame(Numero = NA,
+                       NumeroOriginal = NA)
 
 ## Salvando o id da página principal
 
@@ -310,13 +278,7 @@ saveRDS(df_final,
 
 ## Carregando os dados brutos
 
-df_final <- readRDS("data/output/TRF1/acórdãos_aux_TRF1_10092022_temp.rds")
-df_final2 <- readRDS("data/output/TRF1/acórdãos_aux_TRF1_11102022_temp.rds")
-
-## Empilhando os dados
-
-df_final <- rbind.fill(df_final,
-                       df_final2)
+df_final <- readRDS("data/output/TRF1/acórdãos_aux_TRF1_11102022_temp.rds")
 
 ## Características das varas
 
@@ -324,23 +286,13 @@ varas <- readxl::read_xlsx("data/input/TRF1/varas_TRF1.xlsx")
 
 ## Carregando os processos de referência
 
-processos_2018_2019 <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2018-2019.xlsx")
+processos <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2018-2021.xlsx")
 
-processos_2020 <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2020.xlsx")
-
-processos_2021 <- readxl::read_xlsx("data/input/TRF1/mineração_detalhada_TRF1_2021.xlsx")
-
-## Empilhando os dados
-
-processos <- rbind.fill(processos_2018_2019,
-                        processos_2020,
-                        processos_2021)
-
-## Municípios da Amazônia Legal
-
-## Carregando os dados
+## Carregando os municípios da Amazônia Legal
 
 municipios <- readxl::read_xls("data/input/SireneJud/municípios_amazônia legal_2020.xls")
+
+## Preparando os dados
 
 municipios <- municipios %>% 
   mutate(NM_MUN = str_to_upper(rm_accent(NM_MUN)),

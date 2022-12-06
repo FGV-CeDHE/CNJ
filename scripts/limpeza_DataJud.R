@@ -1,5 +1,5 @@
 
-## TÍTULO: ESTRUTURAÇÃO DADOS SIRENEJUD
+## TÍTULO: ESTRUTURAÇÃO DOS DADOS | DATAJUD
 ## DATA: 03/09/2022
 ## AUTORA: REBECA CARVALHO
 
@@ -9,6 +9,10 @@ library(tidyverse)
 library(sf)
 library(data.table)
 library(abjutils)
+
+## OBJETIVOS
+
+#'         - Realizar a limpeza e tratamento da base de dados DataJud
 
 ## PREPARANDO O AMBIENTE
 
@@ -25,10 +29,8 @@ source("functions/encoder.R",
 
 municipios <- readxl::read_xls("data/input/SireneJud/municípios_amazônia legal_2020.xls")
 
-# df <- fread("data/input/DataJud/DataJud_26102022.csv",
-#             encoding = "UTF-8")
-
-df <- readRDS("data/input/DataJud/DataJud_filt_allvars_26102022.rds")
+df <- fread("data/input/DataJud/DataJud_26102022.csv",
+            encoding = "UTF-8")
 
 classes <- readRDS("data/output/DataJud/familias_cod_classes.rds")
 
@@ -38,6 +40,8 @@ geom <- readRDS("data/input/DataJud/geom_unidades judiciárias_v10102022.rds")
 
 natureza_classes <- readxl::read_xlsx("data/input/DataJud/natureza_classes.xlsx")
 
+# 2. Limpeza --------------------------------------------------------------
+
 ## Padronizando os dados
 
 municipios <- municipios %>% 
@@ -45,8 +49,6 @@ municipios <- municipios %>%
          NM_MUN = ifelse(CD_MUN == 1100049,
                          "CACOAL",
                          NM_MUN))
-
-# 2. Limpeza --------------------------------------------------------------
 
 ## Filtrando somente os estados de interesse
 
@@ -117,7 +119,7 @@ df <- df %>%
 
 ### 2.1.1. Polo passivo -----------------------------------------------------
 
-## Criando um banco temporário com apenas as partes do POLO PASSIVO 
+## Criando um banco temporário 
 
 partes_pa <- df %>% 
   select(numprocess,
@@ -126,7 +128,7 @@ partes_pa <- df %>%
          partes_pa_list) %>% 
   unique()
 
-## Reorganizando os dados do POLO PASSIVO
+## Reorganizando os dados
 
 partes_pa <- partes_pa %>% 
   mutate(across(everything(), 
@@ -230,7 +232,7 @@ partes_pa <- left_join(partes_pa,
 
 ### 2.1.2. Polo ativo -------------------------------------------------------
 
-## Criando um banco temporário com apenas as partes do POLO ATIVO 
+## Criando um banco temporário  
 
 partes_at <- df %>% 
   select(numprocess,
@@ -239,7 +241,7 @@ partes_at <- df %>%
          partes_at_list) %>% 
   unique()
 
-## Reorganizando os dados do POLO ATIVO
+## Reorganizando os dados
 
 partes_at <- partes_at %>% 
   mutate(across(everything(), 
@@ -343,7 +345,7 @@ partes_at <- left_join(partes_at,
 
 ### 2.1.3. Terceiros --------------------------------------------------------
 
-## Criando um banco temporário com apenas as partes do POLO PASSIVO 
+## Criando um banco temporário
 
 partes_tc <- df %>% 
   select(numprocess,
@@ -352,7 +354,7 @@ partes_tc <- df %>%
          partes_tc_list) %>% 
   unique()
 
-## Reorganizando os dados do POLO PASSIVO
+## Reorganizando os dados
 
 partes_tc <- partes_tc %>% 
   mutate(across(everything(), 
@@ -451,7 +453,7 @@ partes_tc <- left_join(partes_tc,
 
 ### 2.1.4. Fiscal da lei diverso --------------------------------------------
 
-## Criando um banco temporário com apenas as partes do POLO PASSIVO 
+## Criando um banco temporário 
 
 partes_fl <- df %>% 
   select(numprocess,
@@ -460,7 +462,7 @@ partes_fl <- df %>%
          partes_fl_list) %>% 
   unique()
 
-## Reorganizando os dados do POLO PASSIVO
+## Reorganizando os dados
 
 partes_fl <- partes_fl %>% 
   mutate(across(everything(), 
@@ -559,7 +561,7 @@ partes_fl <- left_join(partes_fl,
 
 ### 2.1.5. Testemunha do juízo ----------------------------------------------
 
-## Criando um banco temporário com apenas as partes da TESTEMUNHA DO JUÍZO 
+## Criando um banco temporário 
 
 partes_tj <- df %>% 
   select(numprocess,
@@ -568,7 +570,7 @@ partes_tj <- df %>%
          partes_tj_list) %>% 
   unique()
 
-## Reorganizando os dados da TESTEMUNHA DO JUÍZO
+## Reorganizando os dados
 
 partes_tj <- partes_tj %>% 
   mutate(across(everything(), 
@@ -667,7 +669,7 @@ partes_tj <- left_join(partes_tj,
 
 ### 2.1.6. Assistente simples desinteressado (amicus curie) -----------------
 
-## Criando um banco temporário com apenas as partes do ASSISTENTE SIMPLES DESINTERESSADO
+## Criando um banco temporário 
 
 partes_ad <- df %>% 
   select(numprocess,
@@ -676,7 +678,7 @@ partes_ad <- df %>%
          partes_ad_list) %>% 
   unique()
 
-## Reorganizando os dados do ASSISTENTE SIMPLES DESINTERESSADO
+## Reorganizando os dados
 
 partes_ad <- partes_ad %>% 
   mutate(across(everything(), 
@@ -775,7 +777,7 @@ partes_ad <- left_join(partes_ad,
 
 ### 2.1.7. Vítima -----------------------------------------------------------
 
-## Criando um banco temporário com apenas as partes da VÍTIMA 
+## Criando um banco temporário 
 
 partes_vi <- df %>% 
   select(numprocess,
@@ -784,7 +786,7 @@ partes_vi <- df %>%
          partes_vi_list) %>% 
   unique()
 
-## Reorganizando os dados da VÍTIMA
+## Reorganizando os dados
 
 partes_vi <- partes_vi %>% 
   mutate(across(everything(), 
@@ -975,6 +977,7 @@ classes <- classes %>%
                             1348)) %>% 
   unique()
 
+
 assuntos <- assuntos %>% 
   select(codigo_01,
          descricao_01,
@@ -988,19 +991,19 @@ assuntos <- assuntos %>%
 ## Separando os assuntos em diferentes linhas para cada
 ## processo
 
-df2 <- df %>% 
+df <- df %>% 
   mutate(co_assunto_v2 = strsplit(as.character(co_assunto), 
                                   ",")) %>% 
   unnest(co_assunto_v2)
 
 ## Juntando os dados
 
-df2 <- left_join(df2,
-                 classes,
-                 na_matches = "never") %>% 
+df <- left_join(df,
+                classes,
+                na_matches = "never") %>% 
   unique()
 
-df2 <- left_join(df2,
+df <- left_join(df,
                  assuntos,
                  na_matches = "never") %>% 
   unique()
@@ -1012,8 +1015,8 @@ natureza_classes <- natureza_classes %>%
 
 ## Juntando com as informações da natureza das classes
 
-df2 <- left_join(df2,
-                 natureza_classes) %>% 
+df <- left_join(df,
+                natureza_classes) %>% 
   rename("ano_inicio_situacao_novo" = "dt_inicio_situacao_novo_v2",
          "cod_assunto" = "co_assunto_v2",
          "assunto" = "descricao_06",
@@ -1024,7 +1027,7 @@ df2 <- left_join(df2,
 ## Criando uma terceira versão com 
 ## somente algumas colunas
 
-filtrado <- df2 %>% 
+filtrado <- df %>% 
   filter(ano_inicio_situacao_novo >= "2020") %>% 
   select(lat,
          lon,
@@ -1054,7 +1057,7 @@ filtrado <- df2 %>%
 
 ## Criando um banco para os movimentos
 
-movimentos <- df2 %>% 
+movimentos <- df %>% 
   select(numprocess,
          data_ajuizamento,
          ano_inicio_situacao_novo,
@@ -1068,7 +1071,7 @@ movimentos <- df2 %>%
 
 ## Reorganizando os dados
 
-df2 <- df2 %>% 
+df <- df %>% 
   select(numprocess,
          data_ajuizamento,
          ano_inicio_situacao_novo,
@@ -1102,12 +1105,12 @@ df2 <- df2 %>%
 
 ## Banco com todas as variáveis
 
-write.csv(df2,
+write.csv(df,
           "data/output/DataJud/datajud_allvars_filt_v26102022.csv",
           fileEncoding = "UTF-8",
           row.names = F)
 
-saveRDS(df2,
+saveRDS(df,
         "data/output/DataJud/datajud_allvars_filt_v26102022.rds")
 
 ## Banco reduzido

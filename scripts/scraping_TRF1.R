@@ -33,6 +33,10 @@ library(httr)
 
 #'           1. Processos julgados entre 01/01/2017 até 15/06/2022.
 
+## DIRETÓRIO
+
+setwd("CNJ")
+
 ## FUNÇÕES
 
 source("functions/windowSwitch.R", 
@@ -106,30 +110,9 @@ webElem00$clickElement()
 
 webElem00$sendKeysToElement(list(key = "down_arrow"))
 
-## 198.195 resultados de Acórdão. 
-
-## Informações disponíveis:
-
-#'      1. ID;
-#'      2. Tipo;
-#'      3. Número;
-#'      4. Classe;
-#'      5. Relator;
-#'      6. Origem;
-#'      7. Órgão Julgador;
-#'      8. Data;
-#'      9. Data de Publicação;
-#'      10. Fonte da Publicação;
-#'      11. Ementa;
-#'      12. Decisão;
-#'      13. Texto;
-#'      14. Inteiro Teor.
-
-## 2.1. Acórdãos -----------------------------------------------------------
-
 ## Criando uma data frame onde os dados serão armazenados
 
-#df_final <- data.frame()
+df_final <- data.frame()
 
 ## Salvando o id da página principal
 
@@ -250,8 +233,6 @@ saveRDS(df_final,
         "data/output/TRF1/acórdãos_TRF1_23072022_temp.rds")
 
 # 3. Limpeza --------------------------------------------------------------
-
-## 3.1. Acórdãos -----------------------------------------------------------
 
 df_final <- readRDS("data/output/TRF1/acórdãos_TRF1_23072022_temp.rds")
 

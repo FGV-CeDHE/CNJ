@@ -11,6 +11,13 @@ library(data.table)
 library(abjutils)
 library(tm)
 
+## OBJETIVOS
+
+#'         - Limpar e organizar os dados extraídos do 
+#'           Módulo de Produtividade.
+#'         - Cruzar as informações de número de sentenças e número 
+#'           de magistrados por unidade judiciária.
+
 ## PREPARANDO O AMBIENTE
 
 setwd("CNJ")

@@ -13,6 +13,11 @@ library(data.table)
 library(tm)
 library(reshape2)
 
+## OBJETIVOS
+
+#'         - Calcular os tempos médios decorridos entre diferentes 
+#'           fases processuais.
+
 ## PREPARANDO O AMBIENTE
 
 setwd("CNJ")
@@ -46,9 +51,12 @@ movimentos <- left_join(movimentos,
 
 # 2. Momentos -------------------------------------------------------------
 
-## 2.1. MOMENTO 01: Início do processo -------------------------------------
+## 2.1. Início do Processo -------------------------------------------------
 
-fase01 <- movimentos %>%  
+## Selecionando somente as situações e movimentações
+## que marcam o início do processo
+
+momento01 <- movimentos %>%  
   unique() %>% 
   filter(nome_situacao %in% c("DISTRIBUÍDO") &
          id_situacao == 24) %>% 
@@ -62,8 +70,7 @@ fase01 <- movimentos %>%
   group_by(numprocess,
            sigla_grau,
            nome_situacao,
-           nome_fase_processual
-           ) %>% 
+           nome_fase_processual) %>% 
   slice_min(order_by = dt_inicio_situacao) %>% 
   select(numprocess,
          tribunal,
@@ -84,9 +91,12 @@ robusto <- fase01 %>%
            sigla_grau) %>% 
   summarise(freq = n())
 
-## 2.2. MOMENTO 02: Execução do processo -----------------------------------
+## 2.2. Execução do processo -----------------------------------------------
 
-fase02 <- movimentos %>%  
+## Selecionando somente as situações e movimentações
+## que marcam o início da execução do processo
+
+momento02 <- movimentos %>%  
   unique() %>% 
   filter(nome_situacao %in% c("EXECUÇÃO NÃO CRIMINAL INICIADA",
                               "LIQUIDAÇÃO/EXECUÇÃO INICIADA") &
@@ -129,7 +139,8 @@ fase02 <- movimentos %>%
          movimento) %>% 
   unique()
 
-## Removendo caso duplicado
+## Removendo caso duplicado, com dois movimentos 
+## em um mesmo dia
 
 fase02 <- fase02[c(-337),]
 
@@ -140,10 +151,10 @@ robusto <- fase02 %>%
            sigla_grau) %>% 
   summarise(freq = n()) 
 
-## Empilhando as duas fases
+## Empilhando os dois momentos
 
-momentos <- rbind(fase01,
-                  fase02) %>% 
+momentos <- rbind(momento01,
+                  momento02) %>% 
   arrange(sigla_grau, 
           dt_inicio_situacao)
 
@@ -180,13 +191,13 @@ momentos <- momentos %>%
 
 ## Removendo as movimentações com data equivocada
 
-momentos2 <- momentos %>% 
+momentos <- momentos %>% 
   filter(tempo > 0 |
          !is.na(tempo))
 
 ## Calculando o tempo médio para cada um dos tribunais
 
-media_momentos <- momentos2 %>%
+media_momentos <- momentos %>%
   mutate(movimento = "Início do processo - Execução") %>% 
   group_by(sigla_grau,
            tribunal,
@@ -197,6 +208,9 @@ media_momentos <- momentos2 %>%
 # 3. Fases ----------------------------------------------------------------
 
 ## 3.1. Investigatória -----------------------------------------------------
+
+## Selecionando somente as movimentações
+## que integram a fase investigatória
 
 fase01 <- movimentos %>%  
   unique() %>% 
@@ -234,6 +248,9 @@ robusto <- fase01 %>%
 
 ## 3.2. Conhecimento -------------------------------------------------------
 
+## Selecionando somente as movimentações
+## que integram a fase de conhecimento
+
 fase02 <- movimentos %>%  
   unique() %>% 
   filter(!nome_situacao %in% c("PENDENTE",
@@ -270,6 +287,9 @@ robusto <- fase02 %>%
 
 ## 3.3. Execução -----------------------------------------------------------
 
+## Selecionando somente as movimentações
+## que integram a fase de execução
+
 fase03 <- movimentos %>%  
   unique() %>% 
   filter(!nome_situacao %in% c("PENDENTE",
@@ -305,6 +325,9 @@ robusto <- fase03 %>%
   summarise(freq = n())
 
 ## 3.4. Fim do processo ----------------------------------------------------
+
+## Selecionando somente as movimentações
+## que marcam o fim do processo
 
 fase04 <- movimentos %>%  
   unique() %>% 
@@ -343,7 +366,7 @@ robusto <- fase04 %>%
            sigla_grau) %>% 
   summarise(freq = n())
 
-## Empilhando as três fases
+## Empilhando as quatro fases
 
 fases <- rbind(fase01,
                fase02,
@@ -399,13 +422,13 @@ fases <- fases %>%
 
 ## Removendo as movimentações com data equivocada
 
-fases2 <- fases %>% 
+fases <- fases %>% 
   filter(tempo >= 0 |
          is.na(tempo))
 
 ## Calculando o tempo médio para cada um dos tribunais
 
-media_fases <- fases2 %>%
+media_fases <- fases %>%
   group_by(sigla_grau,
            tribunal,
            movimento) %>% 
@@ -426,11 +449,6 @@ writexl::write_xlsx(media_fases,
 writexl::write_xlsx(media_momentos,
                     "data/output/DataJud/média_fases processuais_conhecimento.xlsx")
 
-writexl::write_xlsx(media_momentos,
-                    "data/output/DataJud/média_fases processuais_sem filtro.xlsx")
-
-writexl::write_xlsx(momentos2,
+writexl::write_xlsx(momentos,
                     "data/output/DataJud/momentos processuais_conhecimento.xlsx")
 
-writexl::write_xlsx(momentos2,
-                    "data/output/DataJud/momentos processuais_sem filtro.xlsx")

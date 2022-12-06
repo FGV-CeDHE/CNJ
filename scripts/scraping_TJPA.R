@@ -1,4 +1,10 @@
 
+## DIRETÓRIO
+
+setwd("CNJ")
+
+## FUNÇÕES
+
 source("functions/wordFilter.R", 
        encoding = "UTF-8")
 

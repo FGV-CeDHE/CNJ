@@ -19,7 +19,7 @@ library(tm)
 
 #'         - Coleta do máximo possível de metadados e documentos.
 
-#'         - PALAVRAS-CHAVE: 1. Ementa; 2. Lei e 3. Documento.
+#'         - PALAVRAS-CHAVE: 1. Ementa; 2. Lei ou 3. Documento.
 
 #'         - INFORMAÇÕES IMPORTANTES: 
 
@@ -37,7 +37,6 @@ library(tm)
 ## DIRETÓRIO
 
 setwd("CNJ")
-
 
 ## FUNÇÕES
 
@@ -147,30 +146,6 @@ webElem00$clickElement()
 
 webElem00$sendKeysToElement(list(key = "down_arrow",
                                  key = "down_arrow"))
-
-## 193.360 resultados de Acórdão. 
-
-## Informações disponíveis:
-
-#'      1. ID;
-#'      2. Processo; 
-#'      3. Relator;
-#'      4. Órgão Julgador; 
-#'      5. Data do Julgamento; 
-#'      6. Data da Publicação; 
-#'      7. Agravente; 
-#'      8. Advogado;
-#'      9. Localização; 
-#'      10. Tipo; 
-#'      11. Ramo do Direito;
-#'      12. Assunto;
-#'      13. Tribunal de Origem;
-#'      14. Números de Origem;
-#'      15. Autuação;
-#'      16. Ementa; e
-#'      17. Inteiro Teor.
-
-## 2.1. Acórdãos -----------------------------------------------------------
 
 ## Criando uma data frame onde os dados serão armazenados
 
@@ -1231,8 +1206,6 @@ saveRDS(df_final,
         "CeDHE/data/output/STJ/acórdãos_stj_18072022_temp.rds")
 
 # 3. Limpeza --------------------------------------------------------------
-
-## 3.1. Acórdãos -----------------------------------------------------------
 
 ## Carregando os dados brutos
 

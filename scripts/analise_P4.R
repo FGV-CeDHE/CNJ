@@ -15,6 +15,11 @@ library(nord)
 library(scales)
 library(abjutils)
 
+## OBJETIVOS
+
+#'         - Gerar gráficos e tabelas para a produção do relatório final
+#'           do projeto.
+
 ## CONFIGURA O AMBIENTE
 
 setwd("CNJ")

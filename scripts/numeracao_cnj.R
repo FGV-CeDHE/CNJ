@@ -1,5 +1,5 @@
 
-## TÍTULO: JOIN - NUMERAÇÃO ÚNICA CNJ
+## TÍTULO: NUMERAÇÃO ÚNICA CNJ | CAMADA SIRENEJUD
 ## DATA: 14/11/2022
 ## AUTOR: REBECA CARVALHO
 
@@ -8,6 +8,12 @@
 library(plyr)
 library(tidyverse)
 library(tm)
+
+## OBJETIVOS
+
+#'         - Coletar informações sobre as unidades de origem
+#'           das ações ambientais obtidas via web scraping.
+#'         - Preparar os dados para a Camada do SireneJud.
 
 ## AMBIENTE
 
@@ -131,8 +137,8 @@ df <- left_join(df,
 
 ## Juntando os dados das unidades de origem
 
-df2 <- left_join(df,
-                 cod_unjud) %>% 
+df <- left_join(df,
+                cod_unjud) %>% 
   select(Numero,
          Sequencial,
          DigVerificador,
@@ -161,7 +167,7 @@ df2 <- left_join(df,
 
 ## Verificando quais unidades não foram encontradas
 
-ver <- df2 %>% 
+naoencontr <- df %>% 
   filter(is.na(Municipio)) %>% 
   select(SegmtPoderJudiciario:UnidadeOrigem) %>% 
   unique() %>% 
@@ -169,17 +175,18 @@ ver <- df2 %>%
           SigTribOrig,
           UnidadeOrigem)
 
-# 3. Export ---------------------------------------------------------------
+
+# 3. Salva ----------------------------------------------------------------
 
 ## Salvando o banco final gerado
 
-saveRDS(df2,
+saveRDS(df,
         "data/output/Camada SireneJud/recorte ambiental_setores_14112022.rds")
 
-write.csv(df2,
+write.csv(df,
           "data/output/Camada SireneJud/recorte ambiental_setores_14112022.csv",
           row.names = FALSE,
           fileEncoding = "UTF-8")
 
-writexl::write_xlsx(ver,
-                    "data/input/Módulo de Produtividade Mensal/não encontradas_unidades de origem.xlsx")
+writexl::write_xlsx(naoencontr,
+                    "data/output/Camada SireneJud/não encontradas_unidades de origem.xlsx")
