@@ -185,7 +185,7 @@ plot_numacoesassunt
 
 ## Salva o gráfico
 
-ggsave(filename = "figures/figura xx_assuntos_P4.png",
+ggsave(filename = "figures/figura 13_assuntos_P4.png",
        bg = "white",
        plot = plot_numacoesassunt,
        width = 19,
@@ -352,7 +352,7 @@ plot_numacoesclas
 
 ## Salva o gráfico
 
-ggsave(filename = "figures/figura xx_classes processuais_P4.png",
+ggsave(filename = "figures/figura 12_classes processuais_P4.png",
        bg = "white",
        plot = plot_numacoesclas,
        width = 19,
@@ -627,7 +627,7 @@ plot_fases
 
 ## Salva o gráfico
 
-ggsave(filename = "figures/figura xx_fases processuais_g1_P4.png",
+ggsave(filename = "figures/figura 41_fases processuais_g1_P4.png",
        bg = "white",
        plot = plot_fases,
        width = 19,
@@ -1205,7 +1205,7 @@ num_infracoes <- infracoes %>%
 
 num_infracoes
 
-ggsave(filename = "figures/figura xx_infracoes ambientais.png",
+ggsave(filename = "figures/figura 21_infracoes ambientais.png",
        bg = "white",
        plot = num_infracoes,
        width = 19,
@@ -1360,7 +1360,7 @@ plot_magistrsent_ambt
 
 ## Salva o gráfico
 
-ggsave(filename = "figures/figura xx_sentenças_juizes_unidades jud ambientais_P4.png",
+ggsave(filename = "figures/figura 49_sentenças_juizes_unidades jud ambientais_P4.png",
        bg = "white",
        plot = plot_magistrsent_ambt,
        width = 15,
@@ -1484,7 +1484,7 @@ plot_competencias
 
 ## Salva o gráfico
 
-ggsave(filename = "figures/figura xx_competencias_unid jud_P4.png",
+ggsave(filename = "figures/figura 50_competencias_unid jud_P4.png",
        bg = "white",
        plot = plot_competencias,
        width = 19,
