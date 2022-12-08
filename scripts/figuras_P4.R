@@ -1,6 +1,6 @@
 
 ## TÍTULO: ANÁLISE DESCRITIVA - P4
-## DATA: 17/10/2022
+## DATA: 15/11/2022
 ## AUTORA: REBECA CARVALHO
 
 ## PACOTES UTILIZADOS
@@ -50,8 +50,6 @@ movimentos <- readRDS("data/output/DataJud/movimentações_v26102022.rds")
 
 produtividade_ambt <- readRDS("data/output/Módulo de Produtividade/relação sentenças x juízes_unidade jud ambientais_05122022.rds")
 
-produtividade <- readRDS("data/output/Módulo de Produtividade/relação sentenças x juízes_unidade jud gerais_05122022.rds")
-
 ## 1.1. Limpeza ------------------------------------------------------------
 
 ## Organizando os dados dos municípios
@@ -95,6 +93,10 @@ ibama <- ibama %>%
 # 2. Gráficos -------------------------------------------------------------
 
 ## 2.1. Figura 12: Classes Processuais -------------------------------------
+
+## Figura 12: Ranking das 10 classes processuais mais 
+## frequentes nas ações socioambientais dos tribunais 
+## atuantes na Amazônia Legal (DataJud)
 
 ## Calculando as 10 classes mais recorrentes
 
@@ -197,6 +199,9 @@ ggsave(filename = "figures/figura 12_classes processuais_P4.png",
 
 ## 2.2. Figura 13: Assuntos ------------------------------------------------
 
+## Figura 13: Ranking dos 10 assuntos mais frequentes 
+## nos tribunais atuantes na Amazônia Legal (DataJud)
+
 ## Calculando 10 os assuntos mais recorrentes
 
 numacoes_assuntos <- datajud %>% 
@@ -296,6 +301,10 @@ ggsave(filename = "figures/figura 13_assuntos_P4.png",
        dpi = 1000)
 
 ## 2.3. Figura 21: Infrações Ambientais ------------------------------------
+
+## Figura 21: Número de infrações socioambientais 
+## cometidas por indivíduos ajuizados em ações socioambientais 
+## nos tribunais atuantes na Amazônia Legal (2020-2022)
 
 ## Criando um banco com os nomes dos ajuizados em processos ambientais
 
@@ -447,6 +456,9 @@ ggsave(filename = "figures/figura 21_infracoes ambientais.png",
 
 ## 2.4. Figura 49: Número de Sentenças x Número de Juízes ------------------
 
+## Figura 49: Média do número de sentenças x número de magistrados 
+## em unidades judiciárias atuantes na Amazônia Legal (2015-2021)
+
 ## Criando a paleta de referência
 
 paleta <- c("#543005", "#8c510a", "#bf812d", "#dfc27d", "#f6e8c3", 
@@ -513,6 +525,10 @@ ggsave(filename = "figures/figura 49_sentenças_juizes_unidades jud ambientais_P
        dpi = 1000)
 
 ## 2.5. Figura 50: Competência Ambiental x Competência Não-Ambiental -------
+
+## Figura 50: Média do número de sentenças x número de magistrados 
+## em unidades judiciárias de competência ambiental e 
+## não-ambiental atuantes na Amazônia Legal (2015-2021)
 
 ## Gerando o gráfico
 

@@ -43,7 +43,7 @@ setwd("CNJ")
 source("functions/windowSwitch.R", 
        encoding = "UTF-8")
 
-source("functions/filter.R", 
+source("functions/WordFilter.R", 
        encoding = "UTF-8")
 
 # 1. Ambiente -------------------------------------------------------------
@@ -646,66 +646,30 @@ df_final <- readRDS("data/output/TJAM/acórdãos_tjam_11072022_temp.rds")
 ## Quebrando as strings em várias colunas
 
 df_final <- df_final %>% 
-  separate(X1,
+  separate(webElemtxt2,
            sep = "\\: ",
-           into = c("X1_1",
-                    "X1")) %>% 
-  separate(X2,
+           into = c("webElemtxt2_1",
+                    "webElemtxt2")) %>% 
+  separate(webElemtxt3,
            sep = "\\: ",
-           into = c("X2_1",
-                    "X2")) %>% 
-  separate(X3,
+           into = c("webElemtxt3_1",
+                    "webElemtxt3")) %>% 
+  separate(webElemtxt4,
            sep = "\\: ",
-           into = c("X3_1",
-                    "X3")) %>% 
-  separate(X4,
+           into = c("webElemtxt4_1",
+                    "webElemtxt4")) %>% 
+  separate(webElemtxt5,
            sep = "\\: ",
-           into = c("X4_1",
-                    "X4")) %>% 
-  separate(X5,
+           into = c("webElemtxt5_1",
+                    "webElemtxt5")) %>% 
+  separate(webElemtxt6,
            sep = "\\: ",
-           into = c("X5_1",
-                    "X5")) %>% 
-  separate(X6,
+           into = c("webElemtxt6_1",
+                    "webElemtxt6")) %>% 
+  separate(webElemtxt7,
            sep = "\\: ",
-           into = c("X6_1",
-                    "X6")) %>% 
-  separate(X7,
-           sep = "\\: ",
-           into = c("X7_1",
-                    "X7")) %>% 
-  separate(X8,
-           sep = "\\: ",
-           into = c("X8_1",
-                    "X8")) %>% 
-  separate(X9,
-           sep = "\\: ",
-           into = c("X9_1",
-                    "X9")) %>% 
-  separate(X10,
-           sep = "\\: ",
-           into = c("X10_1",
-                    "X10")) %>% 
-  separate(X11,
-           sep = "\\: ",
-           into = c("X11_1",
-                    "X11")) %>% 
-  separate(X12,
-           sep = "\\: ",
-           into = c("X12_1",
-                    "X12")) %>% 
-  separate(X13,
-           sep = "\\: ",
-           into = c("X13_1",
-                    "X13")) %>% 
-  separate(X14,
-           sep = "\\: ",
-           into = c("X14_1",
-                    "X14")) %>% 
-  separate(X15,
-           sep = "\\: ",
-           into = c("X15_1",
-                    "X15"))
+           into = c("webElemtxt7_1",
+                    "webElemtxt7")) 
 
 ## Organizando e estruturando o banco
 
@@ -844,6 +808,7 @@ df_final_filtros <- busca_palavras_chave(dataframe_final = df_final_filtros,
                                          regex = regex,
                                          nome_coluna = 'EmentaTemp')
 
+
 ## Removendo a coluna de texto temporária e
 ## ordenando os dados
 
@@ -871,9 +836,6 @@ write.csv(df_final_filtros,
           "data/output/TJAM/acórdãos_TJAM_20072022_com filtros.csv",
           row.names = FALSE,
           fileEncoding = "UTF-8")
-
-writexl::write_xlsx(df_final_filtros,
-                    "data/output/TJAM/acórdãos_TJAM_20072022_com filtros.csv")
 
 saveRDS(df_final_filtros,
         "data/output/TJAM/acórdãos_TJAM_20072022_com filtros.rds")
